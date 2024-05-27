@@ -9,23 +9,43 @@ public class HotelServer {
 
     private List<Hotel> initializeHotels() {
         List<Hotel> hotels = new ArrayList<>();
+        // Your existing code for initializing hotels
+
+        // Example of initializing hotels with places
         for (int i = 1; i <= 10; i++) {
+            String place = "City " + i;
             List<Room> rooms = new ArrayList<>();
-            rooms.add(new Room("Single", Arrays.asList("Breakfast", "WiFi", "Parking", "Gym", "Spa", "Restaurant", "Room Service", "Air Conditioning", "Laundry", "Television", "Mini Bar", "Shuttle Service", "Pool"), 50));
-            rooms.add(new Room("Double", Arrays.asList("Breakfast", "Balcony", "WiFi", "Parking", "Gym", "Spa", "Restaurant", "Room Service", "Air Conditioning", "Laundry", "Television", "Mini Bar", "Shuttle Service", "Pool"), 100));
-            rooms.add(new Room("Suite", Arrays.asList("Breakfast", "Hot Tub", "Balcony", "WiFi", "Parking", "Gym", "Spa", "Restaurant", "Room Service", "Air Conditioning", "Laundry", "Television", "Mini Bar", "Shuttle Service", "Pool"), 200));
-            rooms.add(new Room("Family", Arrays.asList("Breakfast", "Balcony", "WiFi", "Parking", "Gym", "Restaurant", "Room Service", "Air Conditioning", "Television", "Mini Bar", "Shuttle Service", "Pool"), 150));
-            rooms.add(new Room("Executive Suite", Arrays.asList("Breakfast", "Hot Tub", "Balcony", "WiFi", "Parking", "Gym", "Spa", "Restaurant", "Room Service", "Air Conditioning", "Laundry", "Television", "Mini Bar", "Shuttle Service", "Pool"), 300));
-            rooms.add(new Room("Penthouse", Arrays.asList("Breakfast", "Hot Tub", "Balcony", "WiFi", "Parking", "Gym", "Spa", "Restaurant", "Room Service", "Air Conditioning", "Laundry", "Television", "Mini Bar", "Shuttle Service", "Pool"), 500));
-            rooms.add(new Room("Standard", Arrays.asList("Breakfast", "WiFi", "Parking", "Air Conditioning", "Television", "Shuttle Service"), 75));
-            rooms.add(new Room("Deluxe", Arrays.asList("Breakfast", "Balcony", "WiFi", "Parking", "Gym", "Spa", "Restaurant", "Room Service", "Air Conditioning", "Laundry", "Television", "Mini Bar", "Shuttle Service", "Pool"), 150));
-            rooms.add(new Room("Bungalow", Arrays.asList("Breakfast", "Hot Tub", "Balcony", "WiFi", "Parking", "Gym", "Spa", "Restaurant", "Room Service", "Air Conditioning", "Laundry", "Television", "Mini Bar", "Shuttle Service", "Pool"), 400));
-            rooms.add(new Room("Economy", Arrays.asList("Breakfast", "WiFi", "Air Conditioning", "Television"), 40));
-            hotels.add(new Hotel("Hotel " + i, rooms.size(), rooms, i % 5 + 1));
+            // Initialize rooms for the hotel
+            Hotel hotel = new Hotel("Hotel " + i, place, rooms, i % 5 + 1);
+            hotels.add(hotel);
         }
         return hotels;
     }
-    
+
+    public List<Hotel> searchHotelsByPlace(String place) {
+        List<Hotel> result = new ArrayList<>();
+        for (Hotel hotel : hotels) {
+            if (hotel.getLocation().equalsIgnoreCase(place)) {
+                result.add(hotel);
+            }
+        }
+        return result;
+    }
+
+    public List<Room> searchRoomsByHotelAndOccupancy(String hotelName, int numAdults, int numChildren) {
+        List<Room> result = new ArrayList<>();
+        for (Hotel hotel : hotels) {
+            if (hotel.getName().equalsIgnoreCase(hotelName)) {
+                for (Room room : hotel.getRooms()) {
+                    if (room.isSuitableForOccupancy(numAdults, numChildren)) {
+                        result.add(room);
+                    }
+                }
+                break; 
+            }
+        }
+        return result;
+    }
 
     public List<Hotel> getHotels() {
         return hotels;

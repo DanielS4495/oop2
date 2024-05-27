@@ -1,15 +1,18 @@
 import java.util.List;
 
 public class Room {
-    private String type; // e.g., single, double, suite
-    private List<String> amenities; // e.g., breakfast, hot tub, etc.
+    private String type;
+    private List<String> amenities;
     private double price;
-    private static double discount = 0;
+    private int numAdults;
+    private int numChildren;
 
-    public Room(String type, List<String> amenities, double price) {
+    public Room(String type, List<String> amenities, double price, int numAdults, int numChildren) {
         this.type = type;
         this.amenities = amenities;
         this.price = price;
+        this.numAdults = numAdults;
+        this.numChildren = numChildren;
     }
 
     public String getType() {
@@ -21,24 +24,24 @@ public class Room {
     }
 
     public double getPrice() {
-        if(discount!=0)
-        return  this.price * (1 - discount / 100);
-        else return this.price;
+        return price;
     }
 
-    public static void applyDiscountToAllRooms(double percentage) {
-        if (percentage < 0 || percentage > 100) {
-            throw new IllegalArgumentException("Discount percentage must be between 0 and 100");
-        }
-        discount = percentage;
+    public int getNumAdults() {
+        return numAdults;
     }
 
-    public static void resetDiscount() {
-        discount = 0;
+    public int getNumChildren() {
+        return numChildren;
+    }
+
+    public boolean isSuitableForOccupancy(int numAdults, int numChildren) {
+        return (numAdults<=getNumAdults() && numChildren<=getNumChildren());
     }
 
     @Override
     public String toString() {
-        return "Room{type='" + type + "', amenities=" + amenities + ", price=" + price + '}';
+        return "Room{type='" + type + "', amenities=" + amenities + ", price=" + price + ", numAdults=" + numAdults
+                + ", numChildren=" + numChildren + "}";
     }
 }

@@ -1,40 +1,32 @@
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Date;
+
 
 public class Hotel {
     private String name;
-    private int numRooms;
-    private List<Room> rooms;
-    private Map<Date, Boolean> availability; // Calendar mapping to room availability
+    private String location;
     private int starRanking;
+    private List<Room> rooms;
+    private Map<Date, Boolean> availability;
 
-    public Hotel(String name, int numRooms, List<Room> rooms, int starRanking) {
+    public Hotel(String name, String location, List<Room> rooms, int starRanking) {
         this.name = name;
-        this.numRooms = numRooms;
+        this.location = location;
         this.rooms = rooms;
         this.starRanking = starRanking;
-        this.availability = new HashMap<>();
-        initializeAvailability();
-    }
-
-    private void initializeAvailability() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.clear(Calendar.MINUTE);
-        calendar.clear(Calendar.SECOND);
-        calendar.clear(Calendar.MILLISECOND);
-
-        for (int i = 0; i < 365; i++) {
-            availability.put(calendar.getTime(), true);
-            calendar.add(Calendar.DATE, 1);
-        }
     }
 
     public String getName() {
         return name;
     }
 
-    public int getNumRooms() {
-        return numRooms;
+    public String getLocation() {
+        return location;
+    }
+
+    public int getStarRanking() {
+        return starRanking;
     }
 
     public List<Room> getRooms() {
@@ -45,16 +37,12 @@ public class Hotel {
         return availability;
     }
 
-    public int getStarRanking() {
-        return starRanking;
-    }
-
-    public void setAvailability(Date date, boolean available) {
-        availability.put(date, available);
+    public void setAvailability(Date date, Boolean isAvailable) {
+        availability.put(date, isAvailable);
     }
 
     @Override
     public String toString() {
-        return "Hotel{name='" + name + "', starRanking=" + starRanking + '}';
+        return "Hotel{name='" + name + "', location='" + location + "', starRanking=" + starRanking + ", rooms=" + rooms.size() + "}";
     }
 }
