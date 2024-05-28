@@ -6,15 +6,15 @@ import java.util.Date;
 public class Hotel {
     private String name;
     private String location;
-    private int starRanking;
+    private int starRating;
     private List<Room> rooms;
     private Map<Date, Boolean> availability;
 
-    public Hotel(String name, String location, List<Room> rooms, int starRanking) {
+    public Hotel(String name, String location, List<Room> rooms, int starRating) {
         this.name = name;
         this.location = location;
         this.rooms = rooms;
-        this.starRanking = starRanking;
+        this.starRating = starRating;
     }
 
     public String getName() {
@@ -25,8 +25,8 @@ public class Hotel {
         return location;
     }
 
-    public int getStarRanking() {
-        return starRanking;
+    public int getStarRating() {
+        return starRating;
     }
 
     public List<Room> getRooms() {
@@ -43,6 +43,6 @@ public class Hotel {
 
     @Override
     public String toString() {
-        return "Hotel{name='" + name + "', location='" + location + "', starRanking=" + starRanking + ", rooms=" + rooms.size() + "}";
+        return "Hotel{name='" + name + "', location='" + location + "', starRating=" + starRating + ", rooms=" + rooms.size() + "}";
     }
 }

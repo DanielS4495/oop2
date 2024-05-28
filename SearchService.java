@@ -3,7 +3,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Calendar;
 
-
 public class SearchService {
     private List<Hotel> hotels;
 
@@ -11,11 +10,12 @@ public class SearchService {
         this.hotels = hotels;
     }
 
-    public List<Hotel> search(Date startDate, Date endDate, List<String> filters, int minStars, String location) {
+    public List<Hotel> search(Date startDate, Date endDate, List<String> filters, int minStars, String location,
+            double minPrice, double maxPrice) {
         List<Hotel> result = new ArrayList<>();
         for (Hotel hotel : hotels) {
             if ((location == null || hotel.getLocation().equalsIgnoreCase(location))
-                    && matchesFilters(hotel, filters, minStars)
+                    && matchesFilters(hotel, filters, minStars, minPrice, maxPrice)
                     && isAvailable(hotel, startDate, endDate)) {
                 result.add(hotel);
             }
@@ -23,24 +23,28 @@ public class SearchService {
         return result;
     }
 
-    public List<Room> searchRoomsInHotel(Hotel hotel, Date startDate, Date endDate, int numAdults, int numChildren) {
+    public List<Room> searchRoomsInHotel(Hotel hotel, Date startDate, Date endDate, int numAdults, int numChildren,double minPrice,double maxPrice) {
         List<Room> availableRooms = new ArrayList<>();
         for (Room room : hotel.getRooms()) {
-            if (room.getNumAdults() >= numAdults && room.getNumChildren() >= numChildren && isRoomAvailable(hotel, room, startDate, endDate)) {
+            double price = room.getPrice();
+            if (room.getNumAdults() >= numAdults && room.getNumChildren() >= numChildren
+                    && isRoomAvailable(hotel, room, startDate, endDate)&&price > minPrice && price < maxPrice) {
                 availableRooms.add(room);
             }
         }
         return availableRooms;
     }
 
-    private boolean matchesFilters(Hotel hotel, List<String> filters, int minStars) {
-        if (hotel.getStarRanking() < minStars) {
+    private boolean matchesFilters(Hotel hotel, List<String> filters, int minStars, double minPrice, double maxPrice) {
+        if (hotel.getStarRating() < minStars) {
             return false;
         }
 
         for (Room room : hotel.getRooms()) {
-            if (room.getAmenities().containsAll(filters)) {
-                return true;
+            double price = room.getPrice();
+            boolean hasAllFilters = filters.stream().allMatch(filter -> room.getAmenities().contains(filter));
+            if (hasAllFilters && price >= minPrice && price <= maxPrice) {
+                return true;  // Return true if at least one suitable room is found
             }
         }
         return false;
@@ -83,6 +87,7 @@ public class SearchService {
         }
         return new Reservation(hotel, room, startDate, endDate);
     }
+
     public List<Room> filterRoomsByPrice(double minPrice, double maxPrice) {
         List<Room> filteredRooms = new ArrayList<>();
         for (Hotel hotel : hotels) {
