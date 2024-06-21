@@ -167,3 +167,90 @@ public class Controller {
         return number;
     }
 }
+
+
+
+
+
+// import java.util.Scanner;
+
+// public class HotelBookingSystem {
+
+//     public static void main(String[] args) {
+//         Scanner scanner = new Scanner(System.in);
+
+//         System.out.println("Hi guest, want to log in or stay guest (login/guest)?");
+//         String loginChoice = scanner.nextLine().toLowerCase();
+
+//         if (loginChoice.equals("login")) {
+//             // Handle login logic (replace with your authentication system)
+//             System.out.println("Login successful!");
+//             mainMenu(scanner);
+//         } else if (loginChoice.equals("guest")) {
+//             mainMenu(scanner);
+//         } else {
+//             System.out.println("Invalid choice. Please enter 'login' or 'guest'.");
+//             main(args); // Recursively call main to get a valid choice
+//         }
+//     }
+
+//     private static void mainMenu(Scanner scanner) {
+//         System.out.println("\nDo you want to (search/show old orders/exit)?");
+//         String choice = scanner.nextLine().toLowerCase();
+
+//         switch (choice) {
+//             case "search":
+//                 searchMenu(scanner);
+//                 break;
+//             case "show old orders":
+//                 // Implement functionality to show user's past orders
+//                 System.out.println("This feature is not yet implemented.");
+//                 mainMenu(scanner);
+//                 break;
+//             case "exit":
+//                 System.out.println("Thank you for using the Hotel Booking System!");
+//                 System.exit(0);
+//             default:
+//                 System.out.println("Invalid choice. Please enter 'search', 'show old orders', or 'exit'.");
+//                 mainMenu(scanner);
+//         }
+//     }
+
+//     private static void searchMenu(Scanner scanner) {
+//         System.out.println("\nWhat do you want to look for? Enter details (location, date, adult, children):");
+//         String searchDetails = scanner.nextLine();
+
+//         System.out.println("\nDo you want to search by? (hotel/room/ranking/amenities):");
+//         String searchCriteria = scanner.nextLine().toLowerCase();
+
+//         // Implement functionality to search for hotels/rooms based on user criteria (searchDetails and searchCriteria)
+
+//         System.out.println("Search results displayed. Do you want to (order/return to search/exit)?");
+//         String orderChoice = scanner.nextLine().toLowerCase();
+
+//         switch (orderChoice) {
+//             case "order":
+//                 // Implement functionality to place an order (including selecting hotel, room, etc.)
+
+//                 System.out.println("Do you want to return to search or exit (search/exit)?");
+//                 String afterOrderChoice = scanner.nextLine().toLowerCase();
+//                 if (afterOrderChoice.equals("search")) {
+//                     searchMenu(scanner);
+//                 } else if (afterOrderChoice.equals("exit")) {
+//                     System.exit(0);
+//                 } else {
+//                     System.out.println("Invalid choice. Please enter 'search' or 'exit'.");
+//                     afterOrderChoice(scanner); // Recursively get a valid choice after order
+//                 }
+//                 break;
+//             case "return to search":
+//                 searchMenu(scanner);
+//                 break;
+//             case "exit":
+//                 System.exit(0);
+//             default:
+//                 System.out.println("Invalid choice. Please enter 'order', 'return to search', or 'exit'.");
+//                 searchMenu(scanner); // Recursively get a valid choice after search
+//         }
+//     }
+// }

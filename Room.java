@@ -1,15 +1,15 @@
-import java.util.List;
 import java.util.Date;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Room {
-    private String type;
-    private List<String> amenities;
-    private double price;
-    private int numAdults;
-    private int numChildren;
-    private Map<Date, Date> bookings;
+    private final String type;
+    private final List<String> amenities;
+    private final double price; //per nught per guest
+    private final int numAdults;
+    private final int numChildren;
+    private final Map<Date, Date> bookings;
 
     public Room(String type, List<String> amenities, double price, int numAdults, int numChildren) {
         this.type = type;
@@ -28,7 +28,7 @@ public class Room {
         return amenities;
     }
 
-    public double getPrice() {
+    public double getPrice() { 
         return price;
     }
 

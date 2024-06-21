@@ -3,7 +3,7 @@ import java.util.List;
 public class View {
     public void displayMenu() {
         System.out.println("1. Search Hotels");
-        System.out.println("2. Search Room in specific hotel");
+        System.out.println("2. Search Room in specific hotel"); // need this?
         System.out.println("3. Book Hotel");
         System.out.println("4. Exit");
     }

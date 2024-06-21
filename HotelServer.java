@@ -22,30 +22,30 @@ public class HotelServer {
         return hotels;
     }
 
-    public List<Hotel> searchHotelsByPlace(String place) {
-        List<Hotel> result = new ArrayList<>();
-        for (Hotel hotel : hotels) {
-            if (hotel.getLocation().equalsIgnoreCase(place)) {
-                result.add(hotel);
-            }
-        }
-        return result;
-    }
+    // public List<Hotel> searchHotelsByPlace(String place) {
+    //     List<Hotel> result = new ArrayList<>();
+    //     for (Hotel hotel : hotels) {
+    //         if (hotel.getLocation().equalsIgnoreCase(place)) {
+    //             result.add(hotel);
+    //         }
+    //     }
+    //     return result;
+    // }
 
-    public List<Room> searchRoomsByHotelAndOccupancy(String hotelName, int numAdults, int numChildren) {
-        List<Room> result = new ArrayList<>();
-        for (Hotel hotel : hotels) {
-            if (hotel.getName().equalsIgnoreCase(hotelName)) {
-                for (Room room : hotel.getRooms()) {
-                    if (room.isSuitableForOccupancy(numAdults, numChildren)) {
-                        result.add(room);
-                    }
-                }
-                break; 
-            }
-        }
-        return result;
-    }
+    // public List<Room> searchRoomsByHotelAndOccupancy(String hotelName, int numAdults, int numChildren) {
+    //     List<Room> result = new ArrayList<>();
+    //     for (Hotel hotel : hotels) {
+    //         if (hotel.getName().equalsIgnoreCase(hotelName)) {
+    //             for (Room room : hotel.getRooms()) {
+    //                 if (room.isSuitableForOccupancy(numAdults, numChildren)) {
+    //                     result.add(room);
+    //                 }
+    //             }
+    //             break; 
+    //         }
+    //     }
+    //     return result;
+    // }
 
     public List<Hotel> getHotels() {
         return hotels;

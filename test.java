@@ -1,9 +1,8 @@
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Scanner;
 
-public class test {
+public class test { ///////////////////////// need to do junit
     public static void main(String[] args) {
         // Test searching hotels
         String searchHotelsInput = "1\n2024-07-07\n2024-07-09\nBreakfast,Balcony\n1\n50\n200\n4\n3\n";
