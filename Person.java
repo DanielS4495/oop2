@@ -1,16 +1,20 @@
+
 public class Person {
+
     private final long personId;
     private String name;
     private String email;
     private String password;
     private boolean login;
+    private long phone;
 
-    public Person(long personId, String name, String email, String password) {
+    public Person(long personId, String name, long phone, String email, String password) {
         this.personId = personId;
         this.name = name;
         this.email = email;
         this.password = password;
         this.login = false;
+        this.phone = phone;
     }
 
     public long getPersonId() {
@@ -41,14 +45,33 @@ public class Person {
         this.email = email;
     }
 
-    public void setPassword(String oldPassword,String newPassword) {
-        if(oldPassword.equals(this.password)){
+    public void setPassword(String oldPassword, String newPassword) {
+        if (oldPassword.equals(this.password)) {
             this.password = newPassword;
         }
     }
 
-    public void setLogin(boolean login) {
-        this.login = login;
-    }
+    public boolean loginWithEmail(String email, String password) {
+        if (this.email.equals(email) && this.password.equals(password)) {
+            this.login = true;
+            return true;
+        }
+        return false;
+    } // For login functionality
 
+    public boolean loginWithName(String name, String password) {
+        if (this.name.equals(name) && this.password.equals(password)) {
+            this.login = true;
+            return true;
+        }
+        return false;
+    } // For login functionality
+
+    public boolean loginWithPhone(long phone, String password) {
+        if (this.phone == phone && this.password.equals(password)) {
+            this.login = true;
+            return true;
+        }
+        return false;
+    } // For login functionality
 }

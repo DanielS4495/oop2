@@ -80,7 +80,7 @@ public class Reservation {
             if (cancellationDeadline.after(new Date())) {
                 // Cancellation allowed before the deadline
                 this.status = ReservationStatus.CANCELLED;
-                getHotel().markRoomAvailable(getCheckInDate(), getCheckOutDate()); // Update room availability
+                getHotel().cancelation(this); // Update room availability
                 return true;
             } else {
                 System.out.println("Cancellation not allowed within one week of the check-in date.");
@@ -90,12 +90,12 @@ public class Reservation {
             System.out.println("Order already cancelled.");
             return false;
         }
-        //user.notify("Order cancelled: " + this.toString());
+        user.notification("Order cancelled: " + this.toString());
     }
 
-    public void setPayment(Payment payment) {
-        this.payment = payment;
-    }
+    // public void setPayment(Payment payment) {
+    //     this.payment = payment;
+    // }
 
     public void executePayment(double amount) {
         if (payment != null && getTotalPrice() == amount && status == ReservationStatus.PENDING) {
@@ -134,6 +134,21 @@ public class Reservation {
                 + ", totalPrice=" + totalPrice + ", status=" + status + "]";
     }
 
+    // public void addNotificationService(Notification service) {
+    //     notificationServices.add(service);
+    // }
+
+    // public void removeNotificationService(NotificationService service) {
+    //     notificationServices.remove(service);
+    // }
+
+        // public void sendCancellationNotification(int roomId, Date checkIn, Date checkOut) {
+        //     for (NotificationService service : notificationServices) {
+        //         String message = String.format("Reservation for room %d canceled from %s to %s.",
+        //                 roomId, checkIn, checkOut);
+        //         service.sendNotification(message, userId);
+        //     }
+        // }
 }
 
 enum ReservationStatus {

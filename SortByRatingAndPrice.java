@@ -7,7 +7,7 @@ public class SortByRatingAndPrice implements Sorting {
 
     @Override
     public void sort(List<Hotel> Hotels) {
-        Collections.sort(Hotels, Comparator.comparing(Hotel::getStarRating)
+        Collections.sort(Hotels, Comparator.comparing(Hotel::getRating)
                 .thenComparingInt(hotel -> hotel.getRooms().stream()
                 .mapToInt(room -> Double.valueOf(room.getPrice()).intValue())
                 .min()

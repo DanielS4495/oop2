@@ -6,6 +6,6 @@ public class SortByRating implements Sorting {
 
     @Override
     public void sort(List<Hotel> Hotels) {
-        Collections.sort(Hotels, Comparator.comparingDouble(Hotel::getStarRating));
+        Collections.sort(Hotels, Comparator.comparingDouble(Hotel::getRating));
     }
 }

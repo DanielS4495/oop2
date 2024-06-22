@@ -38,4 +38,15 @@ public class View {
         System.out.println("Reservation successful:");
         System.out.println(reservation);
     }
+
+    public void displayWishlist(List<Reservation> wishlist) {
+        if (wishlist.isEmpty()) {
+            System.out.println("Wishlist is empty.");
+        } else {
+            System.out.println("Wishlist:");
+            for (Reservation reservation : wishlist) {
+                System.out.println(reservation);
+            }
+        }
+    }
 }

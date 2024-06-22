@@ -1,13 +1,16 @@
 import java.util.*;
 
 public class HotelServer {
+    private List<Manager> managers;
     private List<Hotel> hotels;
 
-    public HotelServer() {
-        this.hotels = initializeHotels();
+    public HotelServer(Manager manager) {
+        this.managers = new ArrayList<>();
+        this.managers.add(manager);
+        this.hotels = initializeHotels(manager);
     }
 
-    private List<Hotel> initializeHotels() {
+    private List<Hotel> initializeHotels(Manager manager) {
         List<Hotel> hotels = new ArrayList<>();
         // Your existing code for initializing hotels
 
@@ -15,8 +18,12 @@ public class HotelServer {
         for (int i = 1; i <= 10; i++) {
             String place = "City " + i;
             List<Room> rooms = new ArrayList<>();
+            List<String> types = Arrays.asList("single", "double", "king", "twin", "suite", "studio", "accessible");
+            for(int j = 1; j <= 10; j++) {
+                rooms.add(new RoomFactory().createRoom(types.get(j), j, 0));
+            }
             // Initialize rooms for the hotel
-            Hotel hotel = new Hotel("Hotel " + i, place, rooms, i % 5 + 1);
+            Hotel hotel = new Hotel(manager,"Hotel " + i, place, rooms, i % 5 + 1);
             hotels.add(hotel);
         }
         return hotels;

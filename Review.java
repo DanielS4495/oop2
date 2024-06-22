@@ -9,6 +9,9 @@ public class Review {
     private final Date date;
 
     public Review(User user, double rating, String comment, Date date) {
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
         this.user = user;
         this.rating = rating;
         this.comment = comment;
