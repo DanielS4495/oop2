@@ -1,6 +1,5 @@
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,8 +10,9 @@ public class User extends Person {
     // private String name;
     // private String email;
     // private String password;
-    private WishList wishList;
+    // private WishList wishList;
     private List<Reservation> pastOrders;
+    private List<Reservation> wishList;
     // private List<Review> reviews; //need to do only in hotel
     private Map<Room, Boolean> subscribedRooms;
     // private boolean login;
@@ -25,10 +25,10 @@ public class User extends Person {
         // this.password = password;
         // Super(userId, name, email, password);
         super(userId, name, phone, email, password);
-        this.wishList = new WishList();
+        this.wishList = new ArrayList<>();
         this.pastOrders = new ArrayList<>();
         // this.reviews = new ArrayList<>();
-        this.wishList = new WishList();
+        // this.wishList = new WishList();
         // this.login = false;
         this.subscribedRooms = new HashMap<>();
         this.notifications = new ArrayList<>();
@@ -59,6 +59,16 @@ public class User extends Person {
         return super.getLogin();
     }
 
+    @Override
+    public void setLoginOut() {
+        super.setLoginOut();
+    }
+
+    @Override
+    public long getPhone() {
+        return super.getPhone();
+    }
+
     // public List<Review> getReviews() {
     //     return reviews;
     // } // Get reviews
@@ -66,39 +76,56 @@ public class User extends Person {
         return this.pastOrders;
     } // Get past orders
 
-    public WishList getWishList() {
+    public List<Reservation> getWishList() {
         return wishList;
     } // Get wishlist
+
     // public void addReview(String reviewerName, double rating, String comment,Date date) {
     //     Review review = new Review(reviewerName, rating, comment, date);
     //     reviews.add(review);
     // } // Add review
-
     public void addToWishlist(Reservation reservation) {
-        wishList.addReservation(reservation);
+        wishList.add(reservation);
     } // Add reservation to wishlist
 
     public void addPastOrder(Reservation reservation) {
-        pastOrders.add(reservation);
+        if (reservation.getStatus().toString().equals("CONFIRMED")) {
+            String message = String.format("Reservation for room %d from %s to %s has been CONFIRMED.",
+                    reservation.getRoom().getRoomId(), reservation.getCheckInDate(), reservation.getCheckOutDate());
+
+            sendNotification(message);
+            pastOrders.add(reservation);
+        } else {
+            System.out.println("Order not completed yet");
+        }
+
     } // Add past orders
 
     public void removePastOrder(Reservation reservation) {
-        if (pastOrders.contains(reservation) && reservation.getStatus().equals("Completed")) {
-            System.out.println("Order removed successfully");
+        if (reservation.getStatus().toString().equals("CANCELLED")) {
+            pastOrders.remove(reservation);
+            String message = String.format("Reservation for room %d from %s to %s has been CANCELLED.",
+                    reservation.getRoom().getRoomId(), reservation.getCheckInDate(), reservation.getCheckOutDate());
+            sendNotification(message);
         } else {
-            System.out.println("Order not found or not completed yet");
+            System.out.println("Order not CANCELLED yet");
         }
-        pastOrders.remove(reservation);
+
     } // Remove past orders
 
     public void removeFromWishlist(Reservation reservation) {
-        wishList.removeReservation(reservation);
+        wishList.remove(reservation);
     } // Remove reservation from wishlist
 
     @Override
     public void setEmail(String email) {
         super.setEmail(email);
     }
+
+    @Override
+    public boolean loginWithId(long id, String password) {
+        return super.loginWithId(id, password);
+    } // For login functionality
 
     @Override
     public boolean loginWithEmail(String email, String password) {
@@ -114,6 +141,10 @@ public class User extends Person {
     public boolean loginWithPhone(long phone, String password) {
         return super.loginWithPhone(phone, password);
     } // For login functionality
+    // @Override
+    // public boolean login(String loginType, long personId, String email,String name, long phone, String password) {
+    //     return super.login(loginType, personId, email, name, phone, password);
+    // }
 
 //     public void subscribeToRoom(Room room) {
 //         subscribedRooms.put(room, room.isAvailable());
@@ -142,25 +173,36 @@ public class User extends Person {
 //     public void notifyReservationChange(Reservation reservation) {
 //         update("Reservation for " + reservation.getRoom().getDescription() + " is now " + reservation.getStatus());
 //     }
-    public void notification(String message) {
-        for (Notification service : notifications) {
-            service.sendNotification(message, this);
+    public void sendNotification(String message) {
+        for (Notification notificationType : notifications) {
+            notificationType.sendNotification(message, this, null);
         }
     }
 
-    public void addNotification(Notification service) {
-        notifications.add(service);
-    }
-
-    public void removeNotification(Notification service) {
-        notifications.remove(service);
-    }
-
-    public void sendCancellationNotification(int roomId, Date checkIn, Date checkOut) {
-        for (Notification service : notifications) {
-            String message = String.format("Reservation for room %d canceled from %s to %s.",
-                    roomId, checkIn, checkOut);
-            service.sendNotification(message, this);
+    public void addNotification(Notification notificationType) {
+        if (notificationType != null) {
+            notifications.add(notificationType);
         }
+    }
+
+    public void removeNotification(Notification notificationType) {
+        if (notificationType != null) {
+            notifications.remove(notificationType);
+        }
+    }
+
+    public List<String> viewNotification() {
+        List<String> list = new ArrayList<>();
+        for (Notification notificationType : notifications) {
+            if (notificationType != null) {
+                list.add(notificationType.toString());
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public String toString() {
+        return ("User [userId=" + super.getPersonId() + ", name=" + super.getName() + ", email=" + super.getEmail() + ", phone=" + super.getPhone() + ", password=" + super.getPassword() + "]");
     }
 }

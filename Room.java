@@ -8,23 +8,20 @@ import java.util.Map;
 public class Room {
 
     private static long Id = 0;
-    private long roomId;
+    private final long roomId;
     private final String type;
     private final List<String> amenities;
     private double price; //per night per guest
     private final int numAdults;
     private final int numChildren;
-    // private final Map<Date, Date> bookings;
     private Map<Date, Boolean> available;
 
     public Room(String type, List<String> amenities, int numAdults, int numChildren) {
-        this.roomId = this.Id++;
+        this.roomId = Room.Id++;
         this.type = type;
         this.amenities = amenities;
-
         this.numAdults = numAdults;
         this.numChildren = numChildren;
-        // this.bookings = new HashMap<>();
         this.price = setPriceCreation();
         this.available = new HashMap<>();
     }
@@ -46,6 +43,10 @@ public class Room {
             price = 90.0;
         }
         return price;
+    }
+
+    public long getRoomId() {
+        return roomId;
     }
 
     public String getType() {
@@ -72,30 +73,17 @@ public class Room {
         return (numAdults <= getNumAdults() && numChildren <= getNumChildren());
     }
 
-    // public boolean isAvailable(Date startDate, Date endDate) {
-    //     for (Map.Entry<Date, Date> booking : bookings.entrySet()) {
-    //         Date bookedStartDate = booking.getKey();
-    //         Date bookedEndDate = booking.getValue();
-    //         if (startDate.before(bookedEndDate) && endDate.after(bookedStartDate)) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
     public boolean isAvailable(Date checkIn, Date checkOut) {
         try {
             if (checkOut.before(checkIn)) {
                 throw new IllegalArgumentException("Check-out date cannot be before check-in date.");
             }
-
             Calendar cal = Calendar.getInstance();
             cal.setTime(checkIn);
-
             // Handle same-day check-in/check-out
             if (checkIn.equals(checkOut)) {
                 return available.containsKey(checkIn) && available.get(checkIn);
             }
-
             // Iterate through dates from checkIn (inclusive) to checkOut (exclusive)
             while (cal.getTime().before(checkOut)) {
                 Date dateToCheck = cal.getTime();
@@ -126,10 +114,6 @@ public class Room {
                 available.put(dateToMark, false);
                 cal.add(Calendar.DAY_OF_MONTH, 1);
             }
-            //do i need this? i can do it with observer
-            // // Store booking information (replace with your specific logic)
-            // System.out.printf("Room %s booked for user %s from %s to %s\n",
-            //         type, userId, checkIn, checkOut);
 
             return true;
         } catch (Exception e) {
@@ -139,7 +123,7 @@ public class Room {
     }
 
     //what do i need to check? 
-    //do i need to do also cancel on reservation?
+    //do i need to do also cancel on reservation? no i can do it with systembooking
     public boolean cancelation(Date checkIn, Date checkOut) {
         try {
             if (checkOut.before(checkIn)) {

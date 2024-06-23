@@ -29,6 +29,10 @@ public class Person {
         return name;
     }
 
+    public long getPhone() {
+        return phone;
+    }
+
     public String getEmail() {
         return email;
     }
@@ -45,11 +49,23 @@ public class Person {
         this.email = email;
     }
 
+    public void setLoginOut() {
+        this.login = false;
+    }
+
     public void setPassword(String oldPassword, String newPassword) {
         if (oldPassword.equals(this.password)) {
             this.password = newPassword;
         }
     }
+
+    public boolean loginWithId(long id, String password) {
+        if (this.personId == id && this.password.equals(password)) {
+            this.login = true;
+            return true;
+        }
+        return false;
+    } // For login functionality
 
     public boolean loginWithEmail(String email, String password) {
         if (this.email.equals(email) && this.password.equals(password)) {
@@ -74,4 +90,19 @@ public class Person {
         }
         return false;
     } // For login functionality
+
+    // public boolean login(String loginType, long personId, String email,String name, long phone, String password) {
+    //     switch (loginType.toLowerCase()) {
+    //         case "id":
+    //             return this.personId == personId && this.password.equals(password);
+    //         case "email":
+    //             return this.email.equals(email) && this.password.equals(password);
+    //         case "name":
+    //             return this.name.equals(name) && this.password.equals(password);
+    //         case "phone":
+    //             return this.phone == phone && this.password.equals(password);
+    //         default:
+    //             return false;
+    //     }
+    // }
 }

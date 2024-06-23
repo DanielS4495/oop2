@@ -1,109 +1,141 @@
 
 // import RoomFactory.RoomType;
 // import RoomFactory.View;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Manager extends Person implements Observer {//need to add create (hotel/room) + observer of (hotel/room)
+public class Manager extends Person {//need to add create (hotel/room) + observer of (hotel/room)
 
     private Map<Room, Boolean> subscribedRooms;
-    private List<Hotel> Myhotels;
-    private List<Room> rooms;
+    private Map<Long, Hotel> Myhotels;//////////
+    // private List<Room> rooms;
+    // private Map<Long, Room> rooms;
+    private List<Notification> notifications;
 
     // private boolean login;
-    public Manager(long userId, String name, long phone, String email, String password) {
-        super(userId, name, phone, email, password);
+    public Manager(long managerId, String name, long phone, String email, String password) {
+        super(managerId, name, phone, email, password);
+        this.notifications = new ArrayList<>();
+        // this.rooms = new HashMap<>();
     }
 
-    public void createHotel(String name, String address, String description, int starRating, List<Room> rooms) {
-        if (!isLoggedIn()) {
-            return;
+    @Override
+    public long getPersonId() {
+        return super.getPersonId();
+    }
+
+    @Override
+    public String getPassword() {
+        return super.getPassword();
+    }
+
+    @Override
+    public String getName() {
+        return super.getName();
+    }
+
+    @Override
+    public long getPhone() {
+        return super.getPhone();
+    }
+
+    @Override
+    public String getEmail() {
+        return super.getEmail();
+    }
+
+    @Override
+    public boolean getLogin() {
+        return super.getLogin();
+    }
+
+    public Hotel createHotel(String name, String address, String description) {
+        if (!getLogin()) {
+            return null;
         }
+        List<Room> rooms = new ArrayList<>();
+        int count = 2;
         for (int i = 0; i < RoomFactory.RoomType.values().length; i++) {
-            Room room1 = new RoomFactory().createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.CITY, i + 1, 0);
-            Room room2 = new RoomFactory().createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.CITY, i + 1, 0);
+            if (i % 2 == 1) {
+                count++;
+            }
+            Room room1 = new RoomFactory().createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.CITY, count, count - 2);
+            Room room2 = new RoomFactory().createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.SEA, count, count - 2);
             rooms.add(room1);
             rooms.add(room2);
         }
-
         Hotel hotel = new Hotel(this, name, address, rooms, description);
-        Myhotels.add(hotel);
-        // Add hotel to database
+        Myhotels.put(hotel.getHotelId(), hotel);
+        return hotel;
     }
 
-    public void createRoom(RoomFactory.RoomType roomType, RoomFactory.View view, int numAdults, int numChildren) {
-        if (!isLoggedIn()) {
+    public void createRoom(long hotelId, RoomFactory.RoomType roomType, RoomFactory.View view, int numAdults, int numChildren) {
+        if (!getLogin()) {
             return;
         }
         Room room = new RoomFactory().createRoom(roomType, view, numAdults, numChildren);
-        // Add room to database
+        Myhotels.get(hotelId).addRoom(room, this);
     }
 
-    // public void updateRoom(Room room) {
-    //     if (!isLoggedIn()) {
-    //         return;
-    //     }
-    //     room.setRoomStatus(roomStatus);
-    //     room.setPrice(price);
-    //     // Update room in database
-    // }
-
-    // public void updateHotel(Hotel hotel, String name, String address, String description, int starRating) {
-    //     if (!isLoggedIn()) {
-    //         return;
-    //     }
-    //     hotel.setName(name);
-    //     hotel.setAddress(address);
-    //     hotel.setDescription(description);
-    //     hotel.setStarRating(starRating);
-    //     // Update hotel in database
-    // }
-
-    public void deleteRoom(Room room,Hotel hotel) {
-        if (!isLoggedIn()) {
+    public void deleteRoom(Room room, Hotel hotel) {//what if we dont have the room?
+        if (!getLogin()) {
             return;
         }
-        Myhotels.get(Myhotels.indexOf(hotel)).getRooms().remove(room);
-        rooms.remove(room);
+        Myhotels.get(hotel).removeRoom(room, this);
+        // rooms.remove(room);
         // Delete room from database
     }
 
     public void deleteHotel(Hotel hotel) {
-        if (!isLoggedIn()) {
+        if (!getLogin()) {
             return;
         }
         Myhotels.remove(hotel);
         // Delete hotel from database
     }
 
- 
-    public void addSubscriber(Room room, User user) {
-        if (!isLoggedIn()) {
+    // public void addSubscriber(Room room, User user) {
+    //     if (!getLogin()) {
+    //         return;
+    //     }
+    //     // Add user to room's subscribers
+    // }
+    // public void removeSubscriber(Room room, User user) {
+    //     if (!getLogin()) {
+    //         return;
+    //     }
+    //     // Remove user from room's subscribers
+    // }
+    // // notify user of hotel changes
+    // public void notifySubscribers(Room room) {
+    //     if (!getLogin()) {
+    //         return;
+    //     }
+    //     // Notify all subscribers of room
+    // }
+    //notify all subscribers of hotel changes
+    public void sendNotification(long hotelId, String message) {
+        if (!getLogin()) {
             return;
         }
-        // Add user to room's subscribers
+        Myhotels.get(hotelId).sendNotification(message);
     }
 
-    public void removeSubscriber(Room room, User user) {
-        if (!isLoggedIn()) {
-            return;
-        }
-        // Remove user from room's subscribers
+    @Override
+    public void setEmail(String email) {
+        super.setEmail(email);
     }
 
-    // notify user of hotel changes
-    public void notifySubscribers(Room room) {
-        if (!isLoggedIn()) {
-            return;
-        }
-        // Notify all subscribers of room
+    @Override
+    public void setPassword(String oldPassword, String newPassword) {
+        super.setPassword(oldPassword, newPassword);
     }
 
-    private boolean isLoggedIn() {
-        // Implement your login check logic here
-        // Return true if manager is logged in, false otherwise
-        return super.getLogin();
-    }
+    @Override
+    public boolean loginWithId(long id, String password) {
+        return super.loginWithId(id, password);
+    } // For login functionality
 
     @Override
     public boolean loginWithEmail(String email, String password) {
@@ -119,9 +151,30 @@ public class Manager extends Person implements Observer {//need to add create (h
     public boolean loginWithPhone(long phone, String password) {
         return super.loginWithPhone(phone, password);
     } // For login functionality
-
     // @Override
-    // public void update(String message) {
-    //     System.out.println("User " + super.getName() + " received update: " + message);
+    // public boolean login(String loginType, long personId, String email,String name, long phone, String password) {
+    //     return super.login(loginType, personId, email, name, phone, password);
     // }
+    public void sendNotification(String message) {
+        for (Notification notificationType : notifications) {
+            notificationType.sendNotification(message, null,this);
+        }
+    }
+
+    public void addNotification(Notification notificationType) {
+        if (notificationType != null) {
+            notifications.add(notificationType);
+        }
+    }
+
+    public void removeNotification(Notification notificationType) {
+        if (notificationType != null) {
+            notifications.remove(notificationType);
+        }
+    }
+    @Override
+    public String toString() {
+        return "Manager [email=" + getEmail() + ", name=" + getName() + ", password=" + getPassword() + ", phone="
+                + getPhone() + "]";
+    }
 }

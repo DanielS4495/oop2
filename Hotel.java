@@ -5,6 +5,8 @@ import java.util.List;
 
 public class Hotel {
 
+    private static long count = 0;
+    private long hotelId = 0;
     private final Manager manager;
     private final String name;
     private final String location;
@@ -12,10 +14,11 @@ public class Hotel {
     private List<String> amenities;
     private List<Room> rooms;
     // private Map<Date, List<Room>> availability;
-
+    private List<User> subscribers;
     private List<Review> reviews;
 
     public Hotel(Manager manager, String name, String location, List<Room> rooms, String description) {
+        this.hotelId = count++;
         this.manager = manager;
         this.name = name;
         this.location = location;
@@ -24,6 +27,11 @@ public class Hotel {
         this.rooms = rooms;
         // this.availability = new HashMap<>();
         this.reviews = new ArrayList<>();
+        this.subscribers = new ArrayList<>();
+    }
+
+    public long getHotelId() {
+        return hotelId;
     }
 
     public String getName() {
@@ -45,7 +53,14 @@ public class Hotel {
     public List<Room> getRooms() {
         return rooms;
     }
-
+    public Room getRoom(long roomId) {
+        for (Room room : rooms) {
+            if (room.getRoomId() == roomId) {
+                return room;
+            }
+        }
+        return null;
+    }
     public Manager getManager() {
         return manager;
     }
@@ -69,7 +84,19 @@ public class Hotel {
         for (Review review : reviews) {
             sum += review.getRating();
         }
-        return (sum / reviews.size());
+        int all = sum / reviews.size();
+        if (all < 1) {
+            return 1;
+        }
+        return all;
+    }
+
+    public void addReview(Review review) {
+        reviews.add(review);
+    }
+
+    public void addSubscribe(User user) {
+        subscribers.add(user);
     }
 
     public void addAmenity(String amenity, Manager manager) {
@@ -93,6 +120,10 @@ public class Hotel {
         if (this.manager == manager) {
             rooms.remove(room);
         }
+    }
+
+    public void removeSubscribe(User user) {
+        subscribers.remove(user);
     }
 
     // public void removeAvailability(Date date, Manager manager) {
@@ -135,4 +166,9 @@ public class Hotel {
         res.getRoom().cancelation(res.getCheckInDate(), res.getCheckOutDate());
         // res.setStatus(ReservationStatus.CANCELED);
     }
+    public void sendNotification(String message) {
+        for (User user : subscribers) {
+            user.sendNotification(message);
+        }
+    }   
 }

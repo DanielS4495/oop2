@@ -9,8 +9,8 @@ public class SortByTopReview implements Sorting {
     public void sort(List<Hotel> Hotels) {
         for (Hotel hotel : Hotels) {
             hotel.setReviews(hotel.getReviews().stream()
-                            .sorted(Comparator.comparingDouble(Review::getRating).thenComparing(Review::getDate))
-                            .collect(Collectors.toList()));
+                .sorted(Comparator.comparingDouble(Review::getRating))
+                .collect(Collectors.toList()));
         }
     }
 }

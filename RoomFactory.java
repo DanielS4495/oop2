@@ -12,7 +12,7 @@ public class RoomFactory {
                     case "single":
                         return new Room(type.toString(), Arrays.asList("Bed", "Bathroom with shower", "Towels", "Toiletries", "Hairdryer", view.toString()), numAdults, numChildren);
                     case "double":
-                        return new Room(type.toString(), Arrays.asList("2 Queen Beds", "Bathroom with shower/tub", "Towels", "Toiletries", "Hairdryer", "Mini fridge", view.toString()), numAdults, numChildren);
+                        return new Room(type.toString(), Arrays.asList("2 Beds", "Bathroom with shower/tub", "Towels", "Toiletries", "Hairdryer", "Mini fridge", view.toString()), numAdults, numChildren);
                     case "king":
                         return new Room(type.toString(), Arrays.asList("King Bed", "Bathroom with shower/tub", "Luxury bathrobes", "Slippers", "Coffee maker", "Bottled water", view.toString()), numAdults, numChildren);
                     case "twin":

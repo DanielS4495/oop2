@@ -2,8 +2,8 @@
 import java.util.Date;
 
 public class Reservation {
-
-    private final int reservationId;
+    private static long count = 0;
+    private final long reservationId;
     private final User user;
     private final Hotel hotel;
     private final Room room;
@@ -11,11 +11,11 @@ public class Reservation {
     private final Date checkOutDate;
     private final int numGuests;
     private final double totalPrice; // Total cost of the booking
-    private ReservationStatus status; // Order status (e.g., PENDING, CONFIRMED, CANCELLED)
+    private ReservationStatus status; // Order status (PENDING, CONFIRMED, CANCELLED)
     private Payment payment;
 
-    public Reservation(int reservationId, User user, Hotel hotel, Room room, Date checkInDate, Date checkOutDate, int numGuests, ReservationStatus status) {
-        this.reservationId = reservationId;
+    public Reservation(User user, Hotel hotel, Room room, Date checkInDate, Date checkOutDate, int numGuests) {
+        this.reservationId = count++;
         this.user = user;
         this.hotel = hotel;
         this.room = room;
@@ -30,7 +30,7 @@ public class Reservation {
         return user;
     }
 
-    public int getReservationId() {
+    public long getReservationId() {
         return reservationId;
     }
 
@@ -81,6 +81,7 @@ public class Reservation {
                 // Cancellation allowed before the deadline
                 this.status = ReservationStatus.CANCELLED;
                 getHotel().cancelation(this); // Update room availability
+                // user.notification("Order cancelled: " + this.toString());
                 return true;
             } else {
                 System.out.println("Cancellation not allowed within one week of the check-in date.");
@@ -90,12 +91,7 @@ public class Reservation {
             System.out.println("Order already cancelled.");
             return false;
         }
-        user.notification("Order cancelled: " + this.toString());
     }
-
-    // public void setPayment(Payment payment) {
-    //     this.payment = payment;
-    // }
 
     public void executePayment(double amount) {
         if (payment != null && getTotalPrice() == amount && status == ReservationStatus.PENDING) {
