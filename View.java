@@ -5,7 +5,7 @@ public class View {
 
     public void displayMenu() {
         System.out.println("1. Search Hotels");
-        System.out.println("2. Search Room in specific hotel"); // need this?
+        System.out.println("2. Search Room in specific hotel"); 
         System.out.println("3. Book Hotel");
         System.out.println("4. Exit");
     }
@@ -14,22 +14,32 @@ public class View {
         System.out.println(message);
     }
 
-    public void displayHotels(List<Hotel> hotels) {
+    public void displaySearchHotels(List<Hotel> hotels) {
         if (hotels.isEmpty()) {
             System.out.println("No hotels found.");
         } else {
             System.out.println("Search Results:");
             for (Hotel hotel : hotels) {
-                System.out.println(hotel);
-                System.out.println("Rooms:");
-                for(Room room : hotel.getRooms()) {
-                    System.out.println(room);
+                if (!hotel.getFilteredRooms().isEmpty()) {
+                    System.out.println(hotel.toString());
+                    displaySearchRooms(hotel.getFilteredRooms());
                 }
             }
         }
     }
 
-    public void displayRooms(List<Room> rooms) {
+    public void displayHotelsManager(List<Hotel> hotels) {
+        if (hotels.isEmpty()) {
+            System.out.println("Dont have any hotels.");
+        } else {
+            System.out.println("My Hotel:");
+            for (Hotel hotel : hotels) {
+                System.out.println(hotel.toString());
+            }
+        }
+    }
+
+    public void displaySearchRooms(List<Room> rooms) {
         if (rooms.isEmpty()) {
             System.out.println("No rooms found.");
         } else {
@@ -40,9 +50,26 @@ public class View {
         }
     }
 
-    public void displayReservation(Reservation reservation) {
-        System.out.println("Reservation successful:");
-        System.out.println(reservation);
+    public void displayRoomsManager(List<Room> rooms) {
+        if (rooms.isEmpty()) {
+            System.out.println("No rooms found in this hotel.");
+        } else {
+            System.out.println("All the rooms in this hotel:");
+            for (Room room : rooms) {
+                System.out.println(room.toString());
+            }
+        }
+    }
+
+    public void displayReservationsManager(List<Reservation> reservation) {
+        if (reservation.isEmpty()) {
+            System.out.println("No reservations found.");
+        } else {
+            System.out.println("Reservations:");
+            for (Reservation res : reservation) {
+                System.out.println(res.toString());
+            }
+        }
     }
 
     public void displayWishlist(List<Reservation> wishlist) {
@@ -51,7 +78,7 @@ public class View {
         } else {
             System.out.println("Wishlist:");
             for (Reservation reservation : wishlist) {
-                System.out.println(reservation);
+                System.out.println(reservation.toString());
             }
         }
     }
@@ -66,14 +93,13 @@ public class View {
     }
 
     public void displayMenuUser() {
-        // System.out.println("\nWelcome " + user.getName() + "!"); //need to do in controller
         System.out.println("1. View Profile");
         System.out.println("2. Search Hotels");
         System.out.println("3. Search Room in specific hotel");
         System.out.println("4. View Wishlist");
         System.out.println("5. Remove from Wishlist");
         System.out.println("6. View Past Orders");
-        System.out.println("7. Make a Reservation"); 
+        System.out.println("7. Make a Reservation");
         System.out.println("8. Pay for a Reservation");
         System.out.println("9. Cancel a Reservation");
         System.out.println("10. View Notifications Type");
@@ -90,7 +116,8 @@ public class View {
         System.out.println("5. View All Hotels");
         System.out.println("6. View All Rooms in Hotel");
         System.out.println("7. View All Reservations in Hotel");
-        System.out.println("8. View All Users in Hotel");
+        System.out.println("8. Add Notification");
+        System.out.println("9. Remove Notification");
         System.out.println("0. Logout");
     }
 
@@ -104,11 +131,27 @@ public class View {
     }
 
     public void displayMenuFilter() {
-        System.out.println("1. Filter by Amenities");
+        System.out.println("1. Filter by Amenities to hotel");
+        System.out.println("1. Filter by Amenities to room");
         System.out.println("2. Filter by Date");
         System.out.println("3. Filter by Location");
         System.out.println("4. Filter by Price");
         System.out.println("5. Filter by Rating");
         System.out.println("0. Exit");
+    }
+
+    public void displayRoomFactory() {
+        System.out.println("1. Single Room");
+        System.out.println("2. Double Room");
+        System.out.println("3. Suite Room");
+        System.out.println("4. Studio Room");
+        System.out.println("5. King Room");
+        System.out.println("6. Twin Room");
+        System.out.println("7. Accessible Room");
+    }
+
+    public void displayRoomFactoryView() {
+        System.out.println("1. City View");
+        System.out.println("2. Sea View");
     }
 }

@@ -1,53 +1,82 @@
 
-// import RoomFactory.RoomType;
-// import RoomFactory.View;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Manager extends Person {//need to add create (hotel/room) + observer of (hotel/room)
+public class Manager {
 
-    private Map<Room, Boolean> subscribedRooms;
-    private Map<Long, Hotel> Myhotels;//////////
-    // private List<Room> rooms;
-    // private Map<Long, Room> rooms;
+    private Map<Long, Hotel> Myhotels;
     private List<Notification> notifications;
+    private final long managerId;
+    public static long count = 0;
+    private String name;
+    private String email;
+    private String password;
+    private boolean login;
+    private long phone;
 
-    // private boolean login;
-    public Manager(long managerId, String name, long phone, String email, String password) {
-        super(managerId, name, phone, email, password);
+    public Manager(String name, long phone, String email, String password) {
+        this.managerId = count++;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.login = false;
+        this.phone = phone;
         this.notifications = new ArrayList<>();
-        // this.rooms = new HashMap<>();
+        this.Myhotels = new HashMap<>();
     }
 
-    @Override
-    public long getPersonId() {
-        return super.getPersonId();
+    public long getManagerId() {
+        return this.managerId;
     }
 
-    @Override
     public String getPassword() {
-        return super.getPassword();
+        return this.password;
     }
 
-    @Override
     public String getName() {
-        return super.getName();
+        return this.name;
     }
 
-    @Override
     public long getPhone() {
-        return super.getPhone();
+        return this.phone;
     }
 
-    @Override
     public String getEmail() {
-        return super.getEmail();
+        return this.email;
     }
 
-    @Override
     public boolean getLogin() {
-        return super.getLogin();
+        return this.login;
+    }
+
+    public List<Hotel> getMyhotels() {
+        return new ArrayList<>(Myhotels.values());
+    }
+
+    public Hotel getHotel(Long hotelId) {
+        return Myhotels.get(hotelId);
+    }
+
+    public List<Reservation> getReservations(long hotelId) {
+        return Myhotels.get(hotelId).getReservations();
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setLoginOut() {
+        this.login = false;
+    }
+
+    public void addHotel(Hotel hotel) {
+        Myhotels.putIfAbsent(hotel.getHotelId(), hotel);
     }
 
     public Hotel createHotel(String name, String address, String description) {
@@ -55,66 +84,30 @@ public class Manager extends Person {//need to add create (hotel/room) + observe
             return null;
         }
         List<Room> rooms = new ArrayList<>();
-        int count = 2;
+        int c = 2;
         for (int i = 0; i < RoomFactory.RoomType.values().length; i++) {
             if (i % 2 == 1) {
                 count++;
             }
-            Room room1 = new RoomFactory().createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.CITY, count, count - 2);
-            Room room2 = new RoomFactory().createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.SEA, count, count - 2);
+            Room room1 = RoomFactory.createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.CITY, c, c - 2);
+            Room room2 = RoomFactory.createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.SEA, c, c - 2);
             rooms.add(room1);
             rooms.add(room2);
         }
         Hotel hotel = new Hotel(this, name, address, rooms, description);
-        Myhotels.put(hotel.getHotelId(), hotel);
+        Myhotels.putIfAbsent(hotel.getHotelId(), hotel);
         return hotel;
     }
 
-    public void createRoom(long hotelId, RoomFactory.RoomType roomType, RoomFactory.View view, int numAdults, int numChildren) {
+    public long createRoom(long hotelId, RoomFactory.RoomType roomType, RoomFactory.View view, int numAdults, int numChildren) {
         if (!getLogin()) {
-            return;
+            return -1;
         }
-        Room room = new RoomFactory().createRoom(roomType, view, numAdults, numChildren);
+        Room room = RoomFactory.createRoom(roomType, view, numAdults, numChildren);
         Myhotels.get(hotelId).addRoom(room, this);
+        return room.getRoomId();
     }
 
-    public void deleteRoom(Room room, Hotel hotel) {//what if we dont have the room?
-        if (!getLogin()) {
-            return;
-        }
-        Myhotels.get(hotel).removeRoom(room, this);
-        // rooms.remove(room);
-        // Delete room from database
-    }
-
-    public void deleteHotel(Hotel hotel) {
-        if (!getLogin()) {
-            return;
-        }
-        Myhotels.remove(hotel);
-        // Delete hotel from database
-    }
-
-    // public void addSubscriber(Room room, User user) {
-    //     if (!getLogin()) {
-    //         return;
-    //     }
-    //     // Add user to room's subscribers
-    // }
-    // public void removeSubscriber(Room room, User user) {
-    //     if (!getLogin()) {
-    //         return;
-    //     }
-    //     // Remove user from room's subscribers
-    // }
-    // // notify user of hotel changes
-    // public void notifySubscribers(Room room) {
-    //     if (!getLogin()) {
-    //         return;
-    //     }
-    //     // Notify all subscribers of room
-    // }
-    //notify all subscribers of hotel changes
     public void sendNotification(long hotelId, String message) {
         if (!getLogin()) {
             return;
@@ -122,42 +115,53 @@ public class Manager extends Person {//need to add create (hotel/room) + observe
         Myhotels.get(hotelId).sendNotification(message);
     }
 
-    @Override
-    public void setEmail(String email) {
-        super.setEmail(email);
+    public void setEmail(String oldEmail, String newEmail) {
+        if (oldEmail.equals(this.email)) {
+            this.email = newEmail;
+        }
     }
 
-    @Override
     public void setPassword(String oldPassword, String newPassword) {
-        super.setPassword(oldPassword, newPassword);
+        if (oldPassword.equals(this.password)) {
+            this.password = newPassword;
+        }
     }
 
-    @Override
-    public boolean loginWithId(long id, String password) {
-        return super.loginWithId(id, password);
-    } // For login functionality
+    public long loginWithId(long id, String password) {
+        if (this.managerId == id && this.password.equals(password)) {
+            this.login = true;
+            return managerId;
+        }
+        return -1;
+    }
 
-    @Override
-    public boolean loginWithEmail(String email, String password) {
-        return super.loginWithEmail(email, password);
-    } // For login functionality
+    public long loginWithEmail(String email, String password) {
+        if (this.email.equals(email) && this.password.equals(password)) {
+            this.login = true;
+            return this.managerId;
+        }
+        return -1;
+    }
 
-    @Override
-    public boolean loginWithName(String name, String password) {
-        return super.loginWithName(name, password);
-    } // For login functionality
+    public long loginWithName(String name, String password) {
+        if (this.name.equals(name) && this.password.equals(password)) {
+            this.login = true;
+            return this.managerId;
+        }
+        return -1;
+    }
 
-    @Override
-    public boolean loginWithPhone(long phone, String password) {
-        return super.loginWithPhone(phone, password);
-    } // For login functionality
-    // @Override
-    // public boolean login(String loginType, long personId, String email,String name, long phone, String password) {
-    //     return super.login(loginType, personId, email, name, phone, password);
-    // }
+    public long loginWithPhone(long phone, String password) {
+        if (this.phone == phone && this.password.equals(password)) {
+            this.login = true;
+            return this.managerId;
+        }
+        return -1;
+    }
+
     public void sendNotification(String message) {
         for (Notification notificationType : notifications) {
-            notificationType.sendNotification(message, null,this);
+            notificationType.sendNotification(message, null, this);
         }
     }
 
@@ -172,9 +176,9 @@ public class Manager extends Person {//need to add create (hotel/room) + observe
             notifications.remove(notificationType);
         }
     }
+
     @Override
     public String toString() {
-        return "Manager [email=" + getEmail() + ", name=" + getName() + ", password=" + getPassword() + ", phone="
-                + getPhone() + "]";
+        return " name:" + name + ", email:" + email + ", phone:" + phone;
     }
 }

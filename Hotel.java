@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 public class Hotel {
-
     private static long count = 0;
     private long hotelId = 0;
     private final Manager manager;
@@ -13,9 +12,10 @@ public class Hotel {
     private final String description;
     private List<String> amenities;
     private List<Room> rooms;
-    // private Map<Date, List<Room>> availability;
+    private List<Room> filterRooms;
     private List<User> subscribers;
     private List<Review> reviews;
+    private List<Reservation> reservations;
 
     public Hotel(Manager manager, String name, String location, List<Room> rooms, String description) {
         this.hotelId = count++;
@@ -25,9 +25,10 @@ public class Hotel {
         this.description = description;
         this.amenities = new ArrayList<>();
         this.rooms = rooms;
-        // this.availability = new HashMap<>();
+        this.filterRooms = rooms;
         this.reviews = new ArrayList<>();
         this.subscribers = new ArrayList<>();
+        this.reservations = new ArrayList<>();
     }
 
     public long getHotelId() {
@@ -53,6 +54,7 @@ public class Hotel {
     public List<Room> getRooms() {
         return rooms;
     }
+
     public Room getRoom(long roomId) {
         for (Room room : rooms) {
             if (room.getRoomId() == roomId) {
@@ -61,6 +63,7 @@ public class Hotel {
         }
         return null;
     }
+
     public Manager getManager() {
         return manager;
     }
@@ -80,15 +83,27 @@ public class Hotel {
     }
 
     public int getRating() {
-        int sum = 0;
+        int sum = 0, all = 0;
         for (Review review : reviews) {
             sum += review.getRating();
         }
-        int all = sum / reviews.size();
+        all = sum / reviews.size();
         if (all < 1) {
             return 1;
         }
         return all;
+    }
+
+    public List<User> getSubscribers() {
+        return subscribers;
+    }
+
+    public List<Reservation> getReservations() {
+        return reservations;
+    }
+
+    public void addReservation(Reservation reservation) {
+        reservations.add(reservation);
     }
 
     public void addReview(Review review) {
@@ -105,20 +120,25 @@ public class Hotel {
         }
     }
 
-    public void addRoom(Room room, Manager manager) {
+    public void setAmenities(List<String> amenities, Manager manager) {
         if (this.manager == manager) {
-            rooms.add(room);
+            for (String a : amenities) {
+                addAmenity(a, manager);
+            }
         }
     }
 
-    // public void addAvailability(Date date, Boolean isAvailable, Manager manager) {
-    //     if (this.manager == manager) {
-    //         availability.put(date, isAvailable);
-    //     }
-    // }
+    public void addRoom(Room room, Manager manager) {
+        if (this.manager == manager) {
+            rooms.add(room);
+            this.filterRooms.add(room);
+        }
+    }
+
     public void removeRoom(Room room, Manager manager) {
         if (this.manager == manager) {
             rooms.remove(room);
+            this.filterRooms.remove(room);
         }
     }
 
@@ -126,11 +146,6 @@ public class Hotel {
         subscribers.remove(user);
     }
 
-    // public void removeAvailability(Date date, Manager manager) {
-    //     if (this.manager == manager) {
-    //         availability.remove(date);
-    //     }
-    // }
     public void removeAmenities(String amenity, Manager manager) {
         if (this.manager == manager) {
             amenities.remove(amenity);
@@ -141,34 +156,27 @@ public class Hotel {
         this.reviews = reviews;
     }
 
-    // public void removeAvailability(Date date, Boolean isAvailable, Manager manager) {
-    //     if (this.manager == manager) {
-    //         availability.remove(date, isAvailable);
-    //     }
-    // }
-    //do i need this?
-    // public void markRoomAvailable(Date checkInDate, Date checkOutDate, Manager manager) {
-    //     if (this.manager == manager) {
-    //         for (Room room : rooms) {
-    //             if (room.isAvailable(checkInDate, checkOutDate)) {
-    //                 room.setAvailability(true);
-    //             }
-    //         }
-    //     }
-    // }
-    //do i need this?
-    // public void markRoomUnavailable(Date checkInDate, Date checkOutDate, Manager manager) {
-    //     if (this.manager == manager) {
-    //     }
-    // }
-    //what do i need to check?
     public void cancelation(Reservation res) {
         res.getRoom().cancelation(res.getCheckInDate(), res.getCheckOutDate());
-        // res.setStatus(ReservationStatus.CANCELED);
+        reservations.remove(res);
     }
+
     public void sendNotification(String message) {
         for (User user : subscribers) {
             user.sendNotification(message);
         }
-    }   
+    }
+
+    public List<Room> getFilteredRooms() {
+        return filterRooms;
+    }
+    public void setFilteredRooms(List<Room> filteredRooms) {
+        this.filterRooms = filteredRooms;
+    }
+
+    @Override
+    public String toString() {
+        return "Hotel: " + "hotelId: " + hotelId + ", name: " + name + ", location: " + location + ", description: " + description + ", amenities: " + amenities.toString() + ", reviews: " + reviews.toString();
+    }
+
 }

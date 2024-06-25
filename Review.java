@@ -34,4 +34,9 @@ public class Review {
         return date;
     }
 
+    @Override
+    public String toString() {
+        return "Review: " + "User: " + user + "Rating: " + rating + ", Comment: " + comment + ", Date: " + date;
+    }
+
 }

@@ -5,41 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SystemBooking { //neeed singelton need user list
+public class SystemBooking {
 
-    private static long userId = 0;
-    private static long managerId = 0;
     private Sorting sort;
     private CompositeFilter filter;
-    // private Map<Long,Hotel> hotels;
     private List<Hotel> hotels;
     private Map<Long, Manager> managers;
     private Map<Long, User> users;
-    // private Reservation reservation;
-    // private Search bookingSearch;
-    // private WishList wishList;
-    // private BookingSubject bookingSubject;
-    // private HotelSorterContext hotelSorterContext;
-    // private HotelFilterContext hotelFilterContext;
-    //  private HashMap<Long, User> users;
     private static SystemBooking instance;
 
     private SystemBooking() {
-        // this.bookingSearch = new BookingSearch();
-        // this.reservation = new Reservation();
-        // // this.wishList = new WishList();
-        // this.users = new HashMap<>();
-        // this.bookingSubject = new BookingSubject();
-        // this.hotelSorterContext = new HotelSorterContext();
-        // this.hotelFilterContext = new HotelFilterContext();
-        // this.managers = new ArrayList<>();
-        // this.users = new ArrayList<>();
         this.filter = new CompositeFilter();
         this.hotels = new ArrayList<>();
-        // this.hotels = new HashMap<>();
         this.managers = new HashMap<>();
         this.users = new HashMap<>();
-
     }
 
     public static synchronized SystemBooking getInstance() {
@@ -51,8 +30,8 @@ public class SystemBooking { //neeed singelton need user list
 
 // ****************************************Manager Start******************************************************
     public void addManager(String name, long phone, String email, String password) {
-        Manager manager = new Manager(managerId++, name, phone, email, password);
-        this.managers.put(manager.getPersonId(), manager);
+        Manager manager = new Manager(name, phone, email, password);
+        this.managers.putIfAbsent(manager.getManagerId(), manager);
     }
 
     public Manager findManagerById(long managerId) {
@@ -66,7 +45,7 @@ public class SystemBooking { //neeed singelton need user list
     public String forgotPasswordManager(String name, String email) {
         for (Manager manager : managers.values()) {
             if (manager.getEmail().equals(email) && manager.getName().equals(name)) {
-                sendNotification(manager.getPersonId(), manager.getPassword());
+                sendNotification(manager.getManagerId(), manager.getPassword());
                 return manager.getPassword();
             }
         }
@@ -80,6 +59,14 @@ public class SystemBooking { //neeed singelton need user list
             }
         }
         return null;
+    }
+
+    public List<Hotel> getHotels(long messageId) {
+        return managers.get(messageId).getMyhotels();
+    }
+
+    public Hotel getHotel(long messageId, long hotelId) {
+        return managers.get(messageId).getHotel(hotelId);
     }
 
     public String getNameManager(long managerId) {
@@ -98,41 +85,126 @@ public class SystemBooking { //neeed singelton need user list
         return managers.get(managerId).getLogin();
     }
 
-    public boolean loginManager(long managerId, String chooseLogin, String emailOrName, Long phone, String password) {
+    public void createHotels(long managerId, String name, String location, String description) {
+        if (this.managers.get(managerId) != null) {
+            if (this.managers.get(managerId).getLogin()) {
+                Hotel hotel;
+                for (int i = 0; i < 5; i++) {//HotelFactory.HotelType.values()[i]
+                    hotel = HotelFactory.createHotel(managers.get(managerId), HotelFactory.HotelType.values()[i], name, "location " + i, "description " + i);
+                    this.hotels.add(hotel);
+                }
+            }
+        }
+    }
+
+    public List<Reservation> getReservations(long managerId, long hotelId) {
+        return managers.get(managerId).getReservations(hotelId);
+    }
+
+    public long loginManager(long managerId, String chooseLogin, String Name, String email, Long phone, String password) {
         switch (chooseLogin.toLowerCase()) {
             case "id":
                 return managers.get(managerId).loginWithId(managerId, password);
             case "email":
-                return managers.get(managerId).loginWithEmail(emailOrName, password);
+                return loginWithEmailManager(email, password);
 
             case "name":
-                return managers.get(managerId).loginWithName(emailOrName, password);
+                return loginWithNameManager(Name, password);
 
             case "phone":
-                return managers.get(managerId).loginWithPhone(phone, password);
+                return loginWithPhoneManager(phone, password);
 
             default:
-                return false;
+                return -1;
         }
     }
 
-    public void createHotel(long managerId, String name, String address, String description) {
+    public long loginWithNameManager(String name, String password) {
+        for (Manager manager : managers.values()) {
+            if (manager.getName().equals(name)) {
+                manager.loginWithName(name, password);
+                return manager.getManagerId();
+            }
+        }
+        return -1;
+    }
+
+    public long loginWithEmailManager(String email, String password) {
+        for (Manager manager : managers.values()) {
+            if (manager.getEmail().equals(email)) {
+                manager.loginWithEmail(email, password);
+                return manager.getManagerId();
+            }
+        }
+        return -1;
+    }
+
+    public long loginWithPhoneManager(long phone, String password) {
+        for (Manager manager : managers.values()) {
+            if (manager.getPhone() == phone) {
+                manager.loginWithPhone(phone, password);
+                return manager.getManagerId();
+            }
+        }
+        return -1;
+    }
+
+    public long createHotel(long managerId, String name, String address, String description) {
         if (this.managers.get(managerId) != null) {
             if (this.managers.get(managerId).getLogin()) {
                 Hotel hotel = this.managers.get(managerId).createHotel(name, address, description);
                 this.hotels.add(hotel);
+                return hotel.getHotelId();
             }
 
         }
-
+        return -1;
     }
 
-    public void createRoom(long managerId, long hotelId, RoomFactory.RoomType roomType, RoomFactory.View view, int numAdults, int numChildren) {
+    public long createRoom(long managerId, long hotelId, RoomFactory.RoomType roomType, RoomFactory.View view, int numAdults, int numChildren) {
         if (this.managers.get(managerId) != null) {
             if (this.managers.get(managerId).getLogin()) {
-                this.managers.get(managerId).createRoom(hotelId, roomType, view, numAdults, numChildren);
+                long roomId = this.managers.get(managerId).createRoom(hotelId, roomType, view, numAdults, numChildren);
+                return roomId;
             }
         }
+        return -1;
+    }
+
+    public void addNotificationTypeManager(long managerId, String notificationtype) {
+        Notification notification = null;
+        switch (notificationtype.toLowerCase()) {
+            case "sms":
+                notification = new SMS();
+                break;
+            case "email":
+                notification = new Email();
+                break;
+            case "whatsapp":
+                notification = new WhatsApp();
+                break;
+            default:
+                break;
+        }
+        findManagerById(managerId).addNotification(notification);
+    }
+
+    public void removeNotificationTypeManager(long managerId, String notificationtype) {
+        Notification notification = null;
+        switch (notificationtype.toLowerCase()) {
+            case "sms":
+                notification = new SMS();
+                break;
+            case "email":
+                notification = new Email();
+                break;
+            case "whatsapp":
+                notification = new WhatsApp();
+                break;
+            default:
+                break;
+        }
+        findManagerById(managerId).removeNotification(notification);
     }
 
     public void sendNotification(long managerId, long hotelId, String message) {
@@ -146,30 +218,60 @@ public class SystemBooking { //neeed singelton need user list
 
     // ****************************************User Start******************************************************
     public void addUser(String name, long phone, String email, String password) {
-        User user = new User(userId++, name, phone, email, password);
-        this.users.put(user.getPersonId(), user);
+        User user = new User(name, phone, email, password);
+        this.users.putIfAbsent(user.getUserId(), user);
     }
 
     public User findUserById(long userId) {
         return this.users.get(userId);
     }
 
-    public boolean loginUser(long userId, String chooseLogin, String emailOrName, Long phone, String password) {
+    public long loginUser(long userId, String chooseLogin, String name, String email, Long phone, String password) {
         switch (chooseLogin.toLowerCase()) {
             case "id":
                 return users.get(userId).loginWithId(userId, password);
             case "email":
-                return users.get(userId).loginWithEmail(emailOrName, password);
+                return loginWithEmailUser(email, password);
 
             case "name":
-                return users.get(userId).loginWithName(emailOrName, password);
+                return loginWithNameUser(name, password);
 
             case "phone":
-                return users.get(userId).loginWithPhone(phone, password);
+                return loginWithPhoneUser(phone, password);
 
             default:
-                return false;
+                return -1;
         }
+    }
+
+    public long loginWithNameUser(String name, String password) {
+        for (User user : users.values()) {
+            if (user.getName().equals(name)) {
+                user.loginWithName(name, password);
+                return user.getUserId();
+            }
+        }
+        return -1;
+    }
+
+    public long loginWithEmailUser(String email, String password) {
+        for (User user : users.values()) {
+            if (user.getEmail().equals(email)) {
+                user.loginWithEmail(email, password);
+                return user.getUserId();
+            }
+        }
+        return -1;
+    }
+
+    public long loginWithPhoneUser(long phone, String password) {
+        for (User user : users.values()) {
+            if (user.getPhone() == phone) {
+                user.loginWithPhone(phone, password);
+                return user.getUserId();
+            }
+        }
+        return -1;
     }
 
     public void logOutUser(long userId) {
@@ -179,7 +281,7 @@ public class SystemBooking { //neeed singelton need user list
     public String forgotPasswordUser(String name, String email) {
         for (User user : users.values()) {
             if (user.getEmail().equals(email) && user.getName().equals(name)) {
-                sendNotification(user.getPersonId(), user.getPassword());
+                sendNotification(user.getUserId(), user.getPassword());
                 return user.getPassword();
             }
         }
@@ -189,7 +291,7 @@ public class SystemBooking { //neeed singelton need user list
     public String forgotUsernameUser(String email, String password) {
         for (User user : users.values()) {
             if (user.getEmail().equals(email) && user.getPassword().equals(password)) {
-                sendNotification(user.getPersonId(), user.getName());
+                sendNotification(user.getUserId(), user.getName());
                 return user.getName();
             }
         }
@@ -221,7 +323,15 @@ public class SystemBooking { //neeed singelton need user list
         return null;
     }
 
-    //return id of reservation
+    public void addReview(long userId, int reservationId, double rating, String review, Date date) {
+        Hotel hotel = users.get(userId).getWishList().get(reservationId).getHotel();
+        if (hotel == null) {
+            return;
+        }
+        Review r = new Review(users.get(userId), rating, review, date);
+        hotel.addReview(r);
+    }
+
     public long makeReservation(long userId, long hotelId, long roomId, Date checkInDate, Date checkOutDate, int numAdults,
             int numChildren) {
         Hotel hotel = findHotelById(hotelId);
@@ -235,37 +345,45 @@ public class SystemBooking { //neeed singelton need user list
     }
 
     //make pay of reservation
-    public void payReservation(User user, int reservationId, String paymentMethod, double amount, long cardNumber, int cvv, Date expirationDate, Date cardHolderName) {
-        // WishList w = user.getWishlist();
-        Reservation r = user.getWishList().get(reservationId);
+    public void payReservation(long userId, int reservationId, String paymentMethod, double amount, long cardNumber, int cvv, Date expirationDate, String cardHolderName) {
+        Reservation r = users.get(userId).getWishList().get(reservationId);
         r.setPayment(paymentMethod, amount, cardNumber, cvv, expirationDate, cardHolderName);
         r.executePayment(amount);
-        user.removeFromWishlist(r);
-        user.addPastOrder(r);
+        users.get(userId).removeFromWishlist(r);
+        users.get(userId).addPastOrder(r);
     }
 
     public double getTotalPriceOfReservation(User user, int reservationId) {
         return user.getWishList().get(reservationId).getTotalPrice();
     }
 
-    public void cancelReservation(long userId, int reservationId) {
-        // user.pastOrders.get(reservationId).cancel();
-        Reservation r = users.get(userId).getPastOrders().get(reservationId);
-        users.get(userId).removePastOrder(r);
-        // reservation.cancel();
-        // user.removeFromWishlist(reservation);
+    public String cancelReservation(long userId, int reservationId) {
+        try {
+
+            Reservation r = users.get(userId).getPastOrders().get(reservationId);
+            if (r == null) {
+                return "Not found Reservation";
+            }
+            String s = r.cancelOrder();
+            if (s.equals("Order cancelled")) {
+
+                users.get(userId).removePastOrder(r);
+                return "Reservation canceled";
+
+            } else {
+                return s;
+            }
+        } catch (Exception e) {
+            return "Not found Reservation";
+        }
     }
 
     public void removeFromWishlist(long userId, long reservationId) {
-        Reservation res = null;
         for (Reservation r : users.get(userId).getWishList()) {
             if (r.getReservationId() == reservationId) {
-                res = r;
+                users.get(userId).removeFromWishlist(r);
                 break;
             }
-        }
-        if (res.getReservationId() == reservationId) {
-            users.get(userId).removeFromWishlist(res);
         }
     }
 
@@ -350,7 +468,7 @@ public class SystemBooking { //neeed singelton need user list
         return hotels;
     }
 
-    public Room findRoomById(long roomId) {
+    public Room findRoomById(long roomId, long hotelId) {
         for (Hotel hotel : hotels) {
             for (Room room : hotel.getRooms()) // return hotel.getRooms().get((int) roomId);
             {
@@ -362,14 +480,21 @@ public class SystemBooking { //neeed singelton need user list
         return null;
     }
 
-    public List<Hotel> filterHotels(List<String> filter, List<String> amenities, Date start, Date finish, double priceMin,
+    public List<Hotel> filterHotels(List<String> filter, List<String> amenitiesHotel, List<String> amenitiesRoom, Date start, Date finish, double priceMin,
             double priceMax, int rating, String location) {
         boolean b = false;
         for (String f : filter) {
             switch (f.toLowerCase()) {
-                case "amenities":
-                    if (amenities != null) {
-                        Filtering filtering = new FilterByAmenities(amenities);
+                case "amenities to hotel":
+                    if (amenitiesHotel != null) {
+                        Filtering filtering = new FilterByAmenitiesHotel(amenitiesHotel);
+                        this.filter.addFilter(filtering);
+                        b = true;
+                        break;
+                    }
+                case "amenities to room":
+                    if (amenitiesRoom != null) {
+                        Filtering filtering = new FilterByAmenitiesRoom(amenitiesRoom);
                         this.filter.addFilter(filtering);
                         b = true;
                         break;
@@ -410,6 +535,10 @@ public class SystemBooking { //neeed singelton need user list
             return this.filter.filter(hotels);
         }
         return null;
+    }
+
+    public List<Hotel> getAllHotels() {
+        return hotels;
     }
 
 }

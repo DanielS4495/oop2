@@ -1,10 +1,10 @@
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class FilterByAmenities implements Filtering {
+public class FilterByAmenitiesHotel implements Filtering {
     private List<String> requiredAmenities;
 
-    public FilterByAmenities(List<String> requiredAmenities) {
+    public FilterByAmenitiesHotel(List<String> requiredAmenities) {
         this.requiredAmenities = requiredAmenities;
     }
 

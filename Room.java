@@ -111,7 +111,7 @@ public class Room {
             cal.setTime(checkIn);
             while (cal.getTime().before(checkOut)) {
                 Date dateToMark = cal.getTime();
-                available.put(dateToMark, false);
+                available.putIfAbsent(dateToMark, false);
                 cal.add(Calendar.DAY_OF_MONTH, 1);
             }
 
@@ -122,8 +122,6 @@ public class Room {
         }
     }
 
-    //what do i need to check? 
-    //do i need to do also cancel on reservation? no i can do it with systembooking
     public boolean cancelation(Date checkIn, Date checkOut) {
         try {
             if (checkOut.before(checkIn)) {
@@ -134,7 +132,7 @@ public class Room {
             cal.setTime(checkIn);
             while (cal.getTime().before(checkOut)) {
                 Date dateToMark = cal.getTime();
-                available.put(dateToMark, true);
+                available.putIfAbsent(dateToMark, true);
                 cal.add(Calendar.DAY_OF_MONTH, 1);
             }
 
@@ -147,7 +145,7 @@ public class Room {
 
     @Override
     public String toString() {
-        return "Room: type='" + type + "', amenities=" + amenities + ", price=" + price + ", numAdults=" + numAdults
+        return "Room: type='" + type + ", Id=" + roomId + "', amenities=" + amenities + ", price=" + price + ", numAdults=" + numAdults
                 + ", numChildren=" + numChildren;
     }
 }

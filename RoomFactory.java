@@ -27,6 +27,7 @@ public class RoomFactory {
                         throw new IllegalArgumentException("Unknown room type");
                 }
             }
+          
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
             return null;

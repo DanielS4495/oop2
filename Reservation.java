@@ -2,6 +2,7 @@
 import java.util.Date;
 
 public class Reservation {
+
     private static long count = 0;
     private final long reservationId;
     private final User user;
@@ -22,7 +23,7 @@ public class Reservation {
         this.checkInDate = checkInDate;
         this.checkOutDate = checkOutDate;
         this.numGuests = numGuests;
-        this.status = ReservationStatus.PENDING;//pending until payment is made
+        this.status = ReservationStatus.PENDING; //pending until payment is made
         this.totalPrice = calculateTotalPrice();
     }
 
@@ -73,23 +74,20 @@ public class Reservation {
         return (numDays * getRoom().getPrice() * numGuests); // Nights multiplied by room price multiplied by number of guests
     }
 
-    public boolean cancelOrder() {
+    public String cancelOrder() {
         if (status == ReservationStatus.CONFIRMED || status == ReservationStatus.PENDING) {
-            // Check for cancellation deadline (one week before check-in)
             Date cancellationDeadline = new Date(getCheckInDate().getTime() - (7 * 24 * 60 * 60 * 1000));
             if (cancellationDeadline.after(new Date())) {
-                // Cancellation allowed before the deadline
                 this.status = ReservationStatus.CANCELLED;
-                getHotel().cancelation(this); // Update room availability
-                // user.notification("Order cancelled: " + this.toString());
-                return true;
+                getHotel().cancelation(this);
+                return ("Order cancelled");
             } else {
-                System.out.println("Cancellation not allowed within one week of the check-in date.");
-                return false;
+                return ("Cancellation not allowed within one week of the check-in date.");
+
             }
         } else {
-            System.out.println("Order already cancelled.");
-            return false;
+            return ("Order already cancelled.");
+
         }
     }
 
@@ -97,10 +95,11 @@ public class Reservation {
         if (payment != null && getTotalPrice() == amount && status == ReservationStatus.PENDING) {
             payment.pay(amount);
             setStatus(ReservationStatus.CONFIRMED);
+            getHotel().addReservation(this);
         }
     }
 
-    public Payment setPayment(String paymentMethod, double amount, long cardNumber, int cvv, Date expirationDate, Date cardHolderName) {
+    public Payment setPayment(String paymentMethod, double amount, long cardNumber, int cvv, Date expirationDate, String cardHolderName) {
         if (this.user.getLogin()) {
             System.out.println("Invalid user login credentials. Payment failed.");
             return null;
@@ -109,11 +108,19 @@ public class Reservation {
             System.out.println("Invalid amount. Payment failed.");
             return null;
         }
-        switch (paymentMethod) {
-            case "CREDIT_CARD":
+        switch (paymentMethod.toLowerCase()) {
+            case "credit card":
                 return new CreditCardPayment(cardNumber, cvv, expirationDate, cardHolderName, amount);
+            case "debit card":
+                return new DebitCardPayment(cardNumber, cvv, expirationDate, cardHolderName, amount);
             case "PAYPAL":
                 return new PayPalPayment(cardNumber, amount);
+            case "bit":
+                return new BitPayment(cardNumber, amount);
+            case "apple pay":
+                return new ApplePayPayment(cardNumber, cvv, expirationDate, cardHolderName, amount);
+            case "google pay":
+                return new GooglePayPayment(cardNumber, cvv, expirationDate, cardHolderName, amount);
             default:
                 return null;
         }
@@ -125,26 +132,8 @@ public class Reservation {
 
     @Override
     public String toString() {
-        return "Reservation [reservationId=" + reservationId + ", user=" + user + ", hotel=" + hotel + ", room=" + room + ", location=" + hotel.getLocation()
-                + ", checkInDate=" + checkInDate + ", checkOutDate=" + checkOutDate + ", numGuests=" + numGuests
-                + ", totalPrice=" + totalPrice + ", status=" + status + "]";
+        return "Reservation: Id:" + reservationId + ", User: " + user + ", Hotel: " + hotel + ", Room: " + room + ", Check-in: " + checkInDate + ", Check-out: " + checkOutDate + ", Guests: " + numGuests + ", Total Price: " + totalPrice + ", Status: " + status;
     }
-
-    // public void addNotificationService(Notification service) {
-    //     notificationServices.add(service);
-    // }
-
-    // public void removeNotificationService(NotificationService service) {
-    //     notificationServices.remove(service);
-    // }
-
-        // public void sendCancellationNotification(int roomId, Date checkIn, Date checkOut) {
-        //     for (NotificationService service : notificationServices) {
-        //         String message = String.format("Reservation for room %d canceled from %s to %s.",
-        //                 roomId, checkIn, checkOut);
-        //         service.sendNotification(message, userId);
-        //     }
-        // }
 }
 
 enum ReservationStatus {
