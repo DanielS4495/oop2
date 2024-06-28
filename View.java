@@ -3,11 +3,25 @@ import java.util.List;
 
 public class View {
 
-    public void displayMenu() {
-        System.out.println("1. Search Hotels");
-        System.out.println("2. Search Room in specific hotel"); 
-        System.out.println("3. Book Hotel");
-        System.out.println("4. Exit");
+    // public void displayMenu() {
+    //     System.out.println("1. Search Hotels");
+    //     System.out.println("2. Search Room in specific hotel");
+    //     System.out.println("3. Book Hotel");
+    //     System.out.println("4. Exit");
+    // }
+    public void displayLogin() {
+        System.out.println("1. Id");
+        System.out.println("2. Name");
+        System.out.println("3. Email");
+        System.out.println("4. Phone");
+        System.out.println("0. Exit");
+    }
+
+    public void displayMenuNotification() {
+        System.out.println("1. SMS");
+        System.out.println("2. Email");
+        System.out.println("3. Whatsapp");
+        System.out.println("0. Exit");
     }
 
     public void displayMessage(String message) {
@@ -15,7 +29,7 @@ public class View {
     }
 
     public void displaySearchHotels(List<Hotel> hotels) {
-        if (hotels.isEmpty()) {
+        if (hotels == null || hotels.isEmpty()) {
             System.out.println("No hotels found.");
         } else {
             System.out.println("Search Results:");
@@ -32,7 +46,7 @@ public class View {
         if (hotels.isEmpty()) {
             System.out.println("Dont have any hotels.");
         } else {
-            System.out.println("My Hotel:");
+            System.out.println("\nMy Hotel:");
             for (Hotel hotel : hotels) {
                 System.out.println(hotel.toString());
             }
@@ -43,7 +57,7 @@ public class View {
         if (rooms.isEmpty()) {
             System.out.println("No rooms found.");
         } else {
-            System.out.println("Available Rooms:");
+            System.out.println("\nAvailable Rooms:");
             for (Room room : rooms) {
                 System.out.println(room);
             }
@@ -84,40 +98,40 @@ public class View {
     }
 
     public void displayMenuLogIn() {
-        System.out.println("1. new user/manager");
-        System.out.println("2. log in user");
-        System.out.println("3. log in manager");
-        System.out.println("4. forgot username");
-        System.out.println("5. forgot password");
+        System.out.println("\n1. new user/manager");
+        System.out.println("2. log in");
+        System.out.println("3. forgot username");
+        System.out.println("4. forgot password");
         System.out.println("0. Exit");
     }
 
     public void displayMenuUser() {
-        System.out.println("1. View Profile");
+        System.out.println("\n1. View Profile");
         System.out.println("2. Search Hotels");
-        System.out.println("3. Search Room in specific hotel");
+        System.out.println("3. Search specific Room by id");
         System.out.println("4. View Wishlist");
         System.out.println("5. Remove from Wishlist");
         System.out.println("6. View Past Orders");
         System.out.println("7. Make a Reservation");
         System.out.println("8. Pay for a Reservation");
         System.out.println("9. Cancel a Reservation");
-        System.out.println("10. View Notifications Type");
+        System.out.println("10. View My Notifications Type");
         System.out.println("11. Add Notification Type");
         System.out.println("12. Remove Notification Type");
         System.out.println("0. Logout");
     }
 
     public void displayMenuManager() {
-        System.out.println("1. View Profile");
+        System.out.println("\n1. View Profile");
         System.out.println("2. create Hotel");
         System.out.println("3. create Room");
         System.out.println("4. send Notification to all user in specific hotel");
         System.out.println("5. View All Hotels");
         System.out.println("6. View All Rooms in Hotel");
         System.out.println("7. View All Reservations in Hotel");
-        System.out.println("8. Add Notification");
-        System.out.println("9. Remove Notification");
+        System.out.println("8. View My Notifications Type");
+        System.out.println("9. Add Notification");
+        System.out.println("10. Remove Notification");
         System.out.println("0. Logout");
     }
 
@@ -132,11 +146,11 @@ public class View {
 
     public void displayMenuFilter() {
         System.out.println("1. Filter by Amenities to hotel");
-        System.out.println("1. Filter by Amenities to room");
-        System.out.println("2. Filter by Date");
-        System.out.println("3. Filter by Location");
-        System.out.println("4. Filter by Price");
-        System.out.println("5. Filter by Rating");
+        System.out.println("2. Filter by Amenities to room");
+        System.out.println("3. Filter by Date");
+        System.out.println("4. Filter by Location");
+        System.out.println("5. Filter by Price");
+        System.out.println("6. Filter by Rating");
         System.out.println("0. Exit");
     }
 

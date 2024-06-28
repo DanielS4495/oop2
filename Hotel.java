@@ -1,9 +1,9 @@
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class Hotel {
+
     private static long count = 0;
     private long hotelId = 0;
     private final Manager manager;
@@ -11,20 +11,20 @@ public class Hotel {
     private final String location;
     private final String description;
     private List<String> amenities;
-    private List<Room> rooms;
-    private List<Room> filterRooms;
+    private List<Room> rooms;//allthe rooms
+    private List<Room> filterRooms;//for filter
     private List<User> subscribers;
     private List<Review> reviews;
     private List<Reservation> reservations;
 
-    public Hotel(Manager manager, String name, String location, List<Room> rooms, String description) {
+    public Hotel(Manager manager, String name, String location, String description) {
         this.hotelId = count++;
         this.manager = manager;
         this.name = name;
         this.location = location;
         this.description = description;
         this.amenities = new ArrayList<>();
-        this.rooms = rooms;
+        this.rooms = new ArrayList<>();
         this.filterRooms = rooms;
         this.reviews = new ArrayList<>();
         this.subscribers = new ArrayList<>();
@@ -72,22 +72,12 @@ public class Hotel {
         return reviews;
     }
 
-    public List<Room> getAvailableRooms(Date checkInDate, Date checkOutDate) {
-        List<Room> availableRooms = new ArrayList<>();
-        for (Room room : rooms) {
-            if (room.isAvailable(checkInDate, checkOutDate)) {
-                availableRooms.add(room);
-            }
-        }
-        return availableRooms;
-    }
-
     public int getRating() {
-        int sum = 0, all = 0;
+        int sum = 0;
         for (Review review : reviews) {
             sum += review.getRating();
         }
-        all = sum / reviews.size();
+        int all = sum / reviews.size();
         if (all < 1) {
             return 1;
         }
@@ -131,14 +121,24 @@ public class Hotel {
     public void addRoom(Room room, Manager manager) {
         if (this.manager == manager) {
             rooms.add(room);
-            this.filterRooms.add(room);
+            // this.filterRooms.add(room);
+        }
+    }
+
+    public void addRooms(List<Room> addRooms, Manager manager) {
+        if (this.manager == manager) {
+            for (Room room : addRooms) {
+                // addRoom(room, manager);
+                this.rooms.add(room);
+                // this.filterRooms.add(room);
+            }
         }
     }
 
     public void removeRoom(Room room, Manager manager) {
         if (this.manager == manager) {
             rooms.remove(room);
-            this.filterRooms.remove(room);
+            // this.filterRooms.remove(room);
         }
     }
 
@@ -168,15 +168,16 @@ public class Hotel {
     }
 
     public List<Room> getFilteredRooms() {
-        return filterRooms;
+        return this.filterRooms;
     }
+
     public void setFilteredRooms(List<Room> filteredRooms) {
         this.filterRooms = filteredRooms;
     }
 
     @Override
     public String toString() {
-        return "Hotel: " + "hotelId: " + hotelId + ", name: " + name + ", location: " + location + ", description: " + description + ", amenities: " + amenities.toString() + ", reviews: " + reviews.toString();
+        return "\nHotel: hotelId: " + hotelId + ", name: " + name + ", location: " + location + ", description: " + description + ", amenities: " + amenities.toString() + ", reviews: " + reviews.toString();
     }
 
 }

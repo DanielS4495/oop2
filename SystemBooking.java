@@ -10,15 +10,13 @@ public class SystemBooking {
     private Sorting sort;
     private CompositeFilter filter;
     private List<Hotel> hotels;
-    private Map<Long, Manager> managers;
-    private Map<Long, User> users;
+    private Map<Long, Person> persons;
     private static SystemBooking instance;
 
     private SystemBooking() {
-        this.filter = new CompositeFilter();
+        // this.filter = new CompositeFilter();
         this.hotels = new ArrayList<>();
-        this.managers = new HashMap<>();
-        this.users = new HashMap<>();
+        this.persons = new HashMap<>();
     }
 
     public static synchronized SystemBooking getInstance() {
@@ -29,130 +27,172 @@ public class SystemBooking {
     }
 
 // ****************************************Manager Start******************************************************
-    public void addManager(String name, long phone, String email, String password) {
-        Manager manager = new Manager(name, phone, email, password);
-        this.managers.putIfAbsent(manager.getManagerId(), manager);
-    }
-
-    public Manager findManagerById(long managerId) {
-        return this.managers.get(managerId);
-    }
-
-    public void logOutManager(long managerId) {
-        managers.get(managerId).setLoginOut();
-    }
-
-    public String forgotPasswordManager(String name, String email) {
-        for (Manager manager : managers.values()) {
-            if (manager.getEmail().equals(email) && manager.getName().equals(name)) {
-                sendNotification(manager.getManagerId(), manager.getPassword());
-                return manager.getPassword();
+    public void addPerson(String identifier, String name, long phone, String email, String password) {//person
+        try {
+            Person person = null;
+            if (identifier.equals("manager")) {
+                person = new Manager(name, phone, email, password);
+            } else if (identifier.equals("user")) {
+                person = new User(name, phone, email, password);
             }
+            if (person != null) {
+                this.persons.putIfAbsent(person.getId(), person);
+            }
+        } catch (NullPointerException e) {
+            System.err.println("Error: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: " + e.getMessage());
+        }
+    }
+
+    public Manager findManagerById(long managerId) {//manager
+        if (managerId < 0) {
+            return null;
+        }
+        Person person = this.persons.get(managerId);
+        if (person instanceof Manager manager) {
+            return manager;
+        } else {
+            return null;
+        }
+    }
+
+    public Person findPersonById(long personId) {//person
+        if (personId < 0) {
+            return null;
+        }
+        try {
+            Person person = this.persons.get(personId);
+            switch (person) {
+                case Manager manager -> {
+                    return manager;
+                }
+                case User user -> {
+                    return user;
+                }
+                default -> {
+                    return null;
+                }
+            }
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+
+    public boolean forgotPassword(String name, String email, Long phone) {//person
+        for (Person person : persons.values()) {
+            if (person.getEmail().equals(email) && person.getName().equals(name) && person.getPhone() == phone) {
+                sendNotification(person.getId(), person.getPassword());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean forgotUsername(String email, Long phone, String password) {//person
+        for (Person person : persons.values()) {
+            if (person.getEmail().equals(email) && person.getPassword().equals(password) && person.getPhone() == phone) {
+                sendNotification(person.id, person.getName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<Hotel> getHotels(long managerId) {//manager
+        Person person = this.persons.get(managerId);
+        if (person instanceof Manager manager) {
+            return manager.getMyhotels();
         }
         return null;
     }
 
-    public String forgotUsernameManager(String email, String password) {
-        for (Manager manager : managers.values()) {
-            if (manager.getEmail().equals(email) && manager.getPassword().equals(password)) {
-                return manager.getName();
-            }
+    public Hotel getHotel(long managerId, long hotelId) {//manager
+        Person person = this.persons.get(managerId);
+        if (person instanceof Manager manager) {
+            return manager.getHotel(hotelId);
         }
         return null;
     }
 
-    public List<Hotel> getHotels(long messageId) {
-        return managers.get(messageId).getMyhotels();
-    }
-
-    public Hotel getHotel(long messageId, long hotelId) {
-        return managers.get(messageId).getHotel(hotelId);
-    }
-
-    public String getNameManager(long managerId) {
-        return managers.get(managerId).getName();
-    }
-
-    public String getEmailManager(long managerId) {
-        return managers.get(managerId).getEmail();
-    }
-
-    public long getPhoneManager(long managerId) {
-        return managers.get(managerId).getPhone();
-    }
-
-    public boolean getLoginManager(long managerId) {
-        return managers.get(managerId).getLogin();
-    }
-
-    public void createHotels(long managerId, String name, String location, String description) {
-        if (this.managers.get(managerId) != null) {
-            if (this.managers.get(managerId).getLogin()) {
-                Hotel hotel;
-                for (int i = 0; i < 5; i++) {//HotelFactory.HotelType.values()[i]
-                    hotel = HotelFactory.createHotel(managers.get(managerId), HotelFactory.HotelType.values()[i], name, "location " + i, "description " + i);
+    public void createHotels(long managerId, String name, String location, String description) {//manager
+        Person person = this.persons.get(managerId);
+        if (person instanceof Manager manager) {
+            if (manager.getLogin()) {
+                for (int i = 0; i < 5; i++) {
+                    Hotel hotel = HotelFactory.createHotel(manager, HotelFactory.HotelType.values()[i], "name " + i, "location " + i, "description " + i);
                     this.hotels.add(hotel);
                 }
             }
         }
     }
 
-    public List<Reservation> getReservations(long managerId, long hotelId) {
-        return managers.get(managerId).getReservations(hotelId);
+    public List<Reservation> getReservations(long managerId, long hotelId) {//manager
+        Person person = this.persons.get(managerId);
+        if (person instanceof Manager manager) {
+            return manager.getReservations(hotelId);
+        }
+        return null;
     }
 
-    public long loginManager(long managerId, String chooseLogin, String Name, String email, Long phone, String password) {
-        switch (chooseLogin.toLowerCase()) {
-            case "id":
-                return managers.get(managerId).loginWithId(managerId, password);
-            case "email":
-                return loginWithEmailManager(email, password);
+    public long login(long personId, String chooseLogin, String Name, String email, Long phone, String password) {//person
+        try {
+            switch (chooseLogin.toLowerCase()) {
+                case "id":
+                    return persons.get(personId).loginWithId(personId, password);
+                case "email":
+                    return loginWithEmailPerson(email, password);
 
-            case "name":
-                return loginWithNameManager(Name, password);
+                case "name":
+                    return loginWithNamePerson(Name, password);
 
-            case "phone":
-                return loginWithPhoneManager(phone, password);
+                case "phone":
+                    return loginWithPhonePerson(phone, password);
 
-            default:
-                return -1;
+                default:
+                    return -1;
+            }
+        } catch (NullPointerException e) {
+            return -1;
         }
     }
 
-    public long loginWithNameManager(String name, String password) {
-        for (Manager manager : managers.values()) {
-            if (manager.getName().equals(name)) {
-                manager.loginWithName(name, password);
-                return manager.getManagerId();
+    public long loginWithNamePerson(String name, String password) {//person
+        for (Person person : persons.values()) {
+            if (person.getName().equals(name) && person.getPassword().equals(password)) {
+                person.loginWithName(name, password);
+                return person.getId();
             }
         }
         return -1;
     }
 
-    public long loginWithEmailManager(String email, String password) {
-        for (Manager manager : managers.values()) {
-            if (manager.getEmail().equals(email)) {
-                manager.loginWithEmail(email, password);
-                return manager.getManagerId();
+    public long loginWithEmailPerson(String email, String password) {//person
+        for (Person person : persons.values()) {
+            if (person.getEmail().equals(email) && person.getPassword().equals(password)) {
+                person.loginWithEmail(email, password);
+                return person.getId();
             }
         }
         return -1;
     }
 
-    public long loginWithPhoneManager(long phone, String password) {
-        for (Manager manager : managers.values()) {
-            if (manager.getPhone() == phone) {
-                manager.loginWithPhone(phone, password);
-                return manager.getManagerId();
+    public long loginWithPhonePerson(long phone, String password) {//person
+        for (Person person : persons.values()) {
+            if (person.getPhone() == phone && person.getPassword().equals(password)) {
+                person.loginWithPhone(phone, password);
+                return person.getId();
             }
         }
         return -1;
     }
 
-    public long createHotel(long managerId, String name, String address, String description) {
-        if (this.managers.get(managerId) != null) {
-            if (this.managers.get(managerId).getLogin()) {
-                Hotel hotel = this.managers.get(managerId).createHotel(name, address, description);
+    public long createHotel(long managerId, String name, String address, String description) {//manager
+        Person person = this.persons.get(managerId);
+        if (person instanceof Manager) {
+            Manager manager = (Manager) person;
+            if (manager.getLogin()) {
+                Hotel hotel = manager.createHotel(name, address, description);
                 this.hotels.add(hotel);
                 return hotel.getHotelId();
             }
@@ -161,17 +201,18 @@ public class SystemBooking {
         return -1;
     }
 
-    public long createRoom(long managerId, long hotelId, RoomFactory.RoomType roomType, RoomFactory.View view, int numAdults, int numChildren) {
-        if (this.managers.get(managerId) != null) {
-            if (this.managers.get(managerId).getLogin()) {
-                long roomId = this.managers.get(managerId).createRoom(hotelId, roomType, view, numAdults, numChildren);
-                return roomId;
+    public long createRoom(long managerId, long hotelId, RoomFactory.RoomType roomType, RoomFactory.View view, int numAdults, int numChildren) {//manager
+        Person person = this.persons.get(managerId);
+        if (person instanceof Manager) {
+            Manager manager = (Manager) person;
+            if (manager.getLogin()) {
+                return manager.createRoom(hotelId, roomType, view, numAdults, numChildren);
             }
         }
         return -1;
     }
 
-    public void addNotificationTypeManager(long managerId, String notificationtype) {
+    public void addNotificationType(long personId, String notificationtype) {//person
         Notification notification = null;
         switch (notificationtype.toLowerCase()) {
             case "sms":
@@ -186,10 +227,10 @@ public class SystemBooking {
             default:
                 break;
         }
-        findManagerById(managerId).addNotification(notification);
+        persons.get(personId).addNotification(notification);
     }
 
-    public void removeNotificationTypeManager(long managerId, String notificationtype) {
+    public void removeNotificationType(long personId, String notificationtype) {//person
         Notification notification = null;
         switch (notificationtype.toLowerCase()) {
             case "sms":
@@ -204,248 +245,167 @@ public class SystemBooking {
             default:
                 break;
         }
-        findManagerById(managerId).removeNotification(notification);
+        persons.get(personId).removeNotification(notification);
     }
 
-    public void sendNotification(long managerId, long hotelId, String message) {
-        if (this.managers.get(managerId) != null) {
-            if (this.managers.get(managerId).getLogin()) {
-                this.managers.get(managerId).sendNotification(hotelId, message);
+    public void sendNotification(long personId, String message) {//person
+        persons.get(personId).sendNotification(message);
+    }
+
+    public List<String> notificationType(long personId) {//person
+        return persons.get(personId).viewNotification();
+    }
+
+    public void sendNotificationToHotelUsers(long managerId, long hotelId, String message) {//manager
+        Person person = this.persons.get(managerId);
+        if (person instanceof Manager) {
+            Manager manager = (Manager) person;
+            if (manager.getLogin()) {
+                manager.sendNotification(hotelId, message);
             }
         }
     }
     // ****************************************Manager Finish******************************************************
 
     // ****************************************User Start******************************************************
-    public void addUser(String name, long phone, String email, String password) {
-        User user = new User(name, phone, email, password);
-        this.users.putIfAbsent(user.getUserId(), user);
+    public User findUserById(long userId) {//user
+        Person person = this.persons.get(userId);
+        if (person instanceof User user) {
+            return (User) person;
+        } else {
+            return null;
+        }
     }
 
-    public User findUserById(long userId) {
-        return this.users.get(userId);
+    public void logOut(long userId) {
+        persons.get(userId).setLoginOut();
     }
 
-    public long loginUser(long userId, String chooseLogin, String name, String email, Long phone, String password) {
-        switch (chooseLogin.toLowerCase()) {
-            case "id":
-                return users.get(userId).loginWithId(userId, password);
-            case "email":
-                return loginWithEmailUser(email, password);
+    public boolean addReview(long userId, int reservationId, double rating, String review, Date date) {//user
+        try {
+            Person person = this.persons.get(userId);
+            if (person instanceof User user) {
+                Hotel hotel = user.getPastOrders().get(reservationId).getHotel();
+                if (hotel == null) {
+                    return false;
+                }
+                Review r = new Review(user, rating, review, date);
+                hotel.addReview(r);
+                return true;
+            }
+            return false;
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+    }
 
-            case "name":
-                return loginWithNameUser(name, password);
-
-            case "phone":
-                return loginWithPhoneUser(phone, password);
-
-            default:
+    public long makeReservation(long userId, long roomId, Date checkInDate, Date checkOutDate, int numAdults,
+            int numChildren) {//user
+        try {
+            Person person = this.persons.get(userId);
+            if (person instanceof User user) {
+                Hotel hotel = findHotelByRoomId(roomId);
+                Room room = hotel.getRoom(roomId);
+                if (room == null || hotel == null || !room.isSuitableForOccupancy(numAdults, numChildren) || !room.isAvailable(checkInDate, checkOutDate)) {
+                    return -1;
+                }
+                Reservation reservation = new Reservation(user, hotel, room, checkInDate, checkOutDate, numAdults + numChildren);
+                user.addToWishlist(reservation);
+                return reservation.getReservationId();
+            } else {
                 return -1;
-        }
-    }
-
-    public long loginWithNameUser(String name, String password) {
-        for (User user : users.values()) {
-            if (user.getName().equals(name)) {
-                user.loginWithName(name, password);
-                return user.getUserId();
             }
-        }
-        return -1;
-    }
-
-    public long loginWithEmailUser(String email, String password) {
-        for (User user : users.values()) {
-            if (user.getEmail().equals(email)) {
-                user.loginWithEmail(email, password);
-                return user.getUserId();
-            }
-        }
-        return -1;
-    }
-
-    public long loginWithPhoneUser(long phone, String password) {
-        for (User user : users.values()) {
-            if (user.getPhone() == phone) {
-                user.loginWithPhone(phone, password);
-                return user.getUserId();
-            }
-        }
-        return -1;
-    }
-
-    public void logOutUser(long userId) {
-        users.get(userId).setLoginOut();
-    }
-
-    public String forgotPasswordUser(String name, String email) {
-        for (User user : users.values()) {
-            if (user.getEmail().equals(email) && user.getName().equals(name)) {
-                sendNotification(user.getUserId(), user.getPassword());
-                return user.getPassword();
-            }
-        }
-        return null;
-    }
-
-    public String forgotUsernameUser(String email, String password) {
-        for (User user : users.values()) {
-            if (user.getEmail().equals(email) && user.getPassword().equals(password)) {
-                sendNotification(user.getUserId(), user.getName());
-                return user.getName();
-            }
-        }
-        return null;
-    }
-
-    public String getNameUser(long userId) {
-        return users.get(userId).getName();
-    }
-
-    public String getEmailUser(long userId) {
-        return users.get(userId).getEmail();
-    }
-
-    public long getPhoneUser(long userId) {
-        return users.get(userId).getPhone();
-    }
-
-    public boolean getLoginUser(long userId) {
-        return users.get(userId).getLogin();
-    }
-
-    public Hotel findHotelById(long hotelId) {
-        for (Hotel hotel : hotels) {
-            if (hotel.getHotelId() == hotelId) {
-                return hotel;
-            }
-        }
-        return null;
-    }
-
-    public void addReview(long userId, int reservationId, double rating, String review, Date date) {
-        Hotel hotel = users.get(userId).getWishList().get(reservationId).getHotel();
-        if (hotel == null) {
-            return;
-        }
-        Review r = new Review(users.get(userId), rating, review, date);
-        hotel.addReview(r);
-    }
-
-    public long makeReservation(long userId, long hotelId, long roomId, Date checkInDate, Date checkOutDate, int numAdults,
-            int numChildren) {
-        Hotel hotel = findHotelById(hotelId);
-        Room room = hotel.getRoom(roomId);
-        if (room == null || !room.isSuitableForOccupancy(numAdults, numChildren) || !room.isAvailable(checkInDate, checkOutDate) || hotel == null) {
+        } catch (IndexOutOfBoundsException e) {
             return -1;
         }
-        Reservation reservation = new Reservation(users.get(userId), hotel, room, checkInDate, checkOutDate, numAdults + numChildren);
-        users.get(userId).addToWishlist(reservation);
-        return reservation.getReservationId();
     }
 
     //make pay of reservation
-    public void payReservation(long userId, int reservationId, String paymentMethod, double amount, long cardNumber, int cvv, Date expirationDate, String cardHolderName) {
-        Reservation r = users.get(userId).getWishList().get(reservationId);
-        r.setPayment(paymentMethod, amount, cardNumber, cvv, expirationDate, cardHolderName);
-        r.executePayment(amount);
-        users.get(userId).removeFromWishlist(r);
-        users.get(userId).addPastOrder(r);
-    }
-
-    public double getTotalPriceOfReservation(User user, int reservationId) {
-        return user.getWishList().get(reservationId).getTotalPrice();
-    }
-
-    public String cancelReservation(long userId, int reservationId) {
+    public void payReservation(long userId, int reservationId, String paymentMethod, double amount, long cardNumber, int cvv, Date expirationDate, String cardHolderName) throws IndexOutOfBoundsException {//user
         try {
-
-            Reservation r = users.get(userId).getPastOrders().get(reservationId);
-            if (r == null) {
-                return "Not found Reservation";
+            Person person = this.persons.get(userId);
+            if (person instanceof User user) {
+                Reservation r = user.getWishList().get(reservationId);
+                r.setPayment(paymentMethod, amount, cardNumber, cvv, expirationDate, cardHolderName);
+                r.executePayment(amount);
+                user.removeFromWishlist(r);
+                user.addPastOrder(r);
             }
-            String s = r.cancelOrder();
-            if (s.equals("Order cancelled")) {
+        } catch (IndexOutOfBoundsException e) {
+            System.err.println("cant pay because - " + e.getMessage());
+        }
+    }
 
-                users.get(userId).removePastOrder(r);
-                return "Reservation canceled";
+    public double getTotalPriceOfReservation(long userId, int reservationId) {//user
+        Person person = this.persons.get(userId);
+        if (person instanceof User user) {
+            return user.getWishList().get(reservationId).getTotalPrice();
+        } else {
+            return -1;
+        }
+    }
 
-            } else {
-                return s;
+    public String cancelReservation(long userId, int reservationId) {//user
+        try {
+            Person person = this.persons.get(userId);
+            if (person instanceof User user) {
+                Reservation r = user.getPastOrders().get(reservationId);
+                if (r == null) {
+                    return "Not found Reservation";
+                }
+                String s = r.cancelOrder();
+                if (s.equals("Order cancelled")) {
+
+                    user.removePastOrder(r);
+                    return "Reservation canceled";
+
+                } else {
+                    return s;
+                }
             }
-        } catch (Exception e) {
+            return "Not found Reservation";
+        } catch (IndexOutOfBoundsException e) {
             return "Not found Reservation";
         }
     }
 
-    public void removeFromWishlist(long userId, long reservationId) {
-        for (Reservation r : users.get(userId).getWishList()) {
-            if (r.getReservationId() == reservationId) {
-                users.get(userId).removeFromWishlist(r);
-                break;
+    public boolean removeFromWishlist(long userId, long reservationId) {//user
+        Person person = this.persons.get(userId);
+        if (person instanceof User user) {
+            for (Reservation r : user.getWishList()) {
+                if (r.getReservationId() == reservationId) {
+                    user.removeFromWishlist(r);
+                    return true;
+                }
             }
         }
+        return false;
     }
 
-    public List<Reservation> getWishList(long userId) {
-        return users.get(userId).getWishList();
-    }
-
-    public List<Reservation> getPastOrder(long userId) {
-        return users.get(userId).getPastOrders();
-    }
-
-    public List<String> notificationType(long userId) {
-        return findUserById(userId).viewNotification();
-    }
-
-    public void addNotificationType(long userId, String notificationtype) {
-        Notification notification = null;
-        switch (notificationtype.toLowerCase()) {
-            case "sms":
-                notification = new SMS();
-                break;
-            case "email":
-                notification = new Email();
-                break;
-            case "whatsapp":
-                notification = new WhatsApp();
-                break;
-            default:
-                break;
+    public List<Reservation> getWishList(long userId) {//user
+        Person person = this.persons.get(userId);
+        if (person instanceof User user) {
+            return user.getWishList();
+        } else {
+            return null;
         }
-        findUserById(userId).addNotification(notification);
     }
 
-    public void removeNotificationType(long userId, String notificationtype) {
-        Notification notification = null;
-        switch (notificationtype.toLowerCase()) {
-            case "sms":
-                notification = new SMS();
-                break;
-            case "email":
-                notification = new Email();
-                break;
-            case "whatsapp":
-                notification = new WhatsApp();
-                break;
-            default:
-                break;
+    public List<Reservation> getPastOrder(long userId) {//user
+        Person person = this.persons.get(userId);
+        if (person instanceof User user) {
+            return user.getPastOrders();
+        } else {
+            return null;
         }
-        findUserById(userId).removeNotification(notification);
-    }
-
-    public void sendNotification(long userId, String message) {
-        findUserById(userId).sendNotification(message);
-    }
-
-    public void sendToManagerNotification(long managerId, String message) {
-        findManagerById(managerId).sendNotification(message);
     }
 
     // ****************************************User Finish******************************************************
     public List<Hotel> sortHotels(String sort) {
         switch (sort.toLowerCase()) {
+            case "id":
+                this.sort = new SortById();
+                break;
             case "price":
                 this.sort = new SortByPrice();
                 break;
@@ -468,10 +428,9 @@ public class SystemBooking {
         return hotels;
     }
 
-    public Room findRoomById(long roomId, long hotelId) {
+    public Room findRoomById(long roomId) {
         for (Hotel hotel : hotels) {
-            for (Room room : hotel.getRooms()) // return hotel.getRooms().get((int) roomId);
-            {
+            for (Room room : hotel.getRooms()) {
                 if (room.getRoomId() == roomId) {
                     return room;
                 }
@@ -480,9 +439,30 @@ public class SystemBooking {
         return null;
     }
 
-    public List<Hotel> filterHotels(List<String> filter, List<String> amenitiesHotel, List<String> amenitiesRoom, Date start, Date finish, double priceMin,
+    public Hotel findHotelById(long hotelId) {
+        for (Hotel hotel : hotels) {
+            if (hotel.getHotelId() == hotelId) {
+                return hotel;
+            }
+        }
+        return null;
+    }
+
+    public Hotel findHotelByRoomId(long roomId) {
+        for (Hotel hotel : hotels) {
+            for (Room room : hotel.getRooms()) {
+                if (room.getRoomId() == roomId) {
+                    return hotel;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Hotel> filterHotels(List<Hotel> hotels, List<String> filter, List<String> amenitiesHotel, List<String> amenitiesRoom, Date start, Date finish, double priceMin,
             double priceMax, int rating, String location) {
         boolean b = false;
+        this.filter = new CompositeFilter();
         for (String f : filter) {
             switch (f.toLowerCase()) {
                 case "amenities to hotel":
@@ -538,7 +518,22 @@ public class SystemBooking {
     }
 
     public List<Hotel> getAllHotels() {
+        for (Hotel hotel : hotels) {
+            hotel.setFilteredRooms(hotel.getRooms());
+        }
         return hotels;
+    }
+
+    public double findResarvationById(long userId, int reservationId) {
+        Person person = this.persons.get(userId);
+        if (person instanceof User user) {
+            for (Reservation reservation : user.getWishList()) {
+                if (reservation.getReservationId() == reservationId) {
+                    reservation.getTotalPrice();
+                }
+            }
+        }
+        return -1;
     }
 
 }

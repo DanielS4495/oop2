@@ -1,3 +1,5 @@
+
 public interface Notification {
-    void sendNotification(String message,User user,Manager manager);
+
+    void sendNotification(String message, Person person);
 }

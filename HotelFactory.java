@@ -6,13 +6,13 @@ import java.util.List;
 public class HotelFactory {
 
     public static Hotel createHotel(Manager manager, HotelType type, String name, String location, String description) {
-        Hotel hotel;
+        Hotel hotel = new Hotel(manager, name, location, description);
         List<Room> rooms = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
-            rooms.add(RoomFactory.createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.CITY, i + 1, i));
-            rooms.add(RoomFactory.createRoom(RoomFactory.RoomType.values()[i], RoomFactory.View.SEA, i + 1, i));
+            rooms.add(RoomFactory.createRoom(hotel.getHotelId(), RoomFactory.RoomType.values()[i], RoomFactory.View.CITY, i + 1, i));
+            rooms.add(RoomFactory.createRoom(hotel.getHotelId(), RoomFactory.RoomType.values()[i], RoomFactory.View.SEA, i + 1, i));
         }
-        hotel = new Hotel(manager, name, location, rooms, description);
+        hotel.addRooms(rooms, manager);
         switch (type.toString().toLowerCase()) {
             case "basic":
                 hotel.setAmenities(Arrays.asList(Amenity.WIFI.toString()), manager);

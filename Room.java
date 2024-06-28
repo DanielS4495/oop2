@@ -1,5 +1,6 @@
 
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.Map;
 
 public class Room {
 
+    private final long hotelId;
     private static long Id = 0;
     private final long roomId;
     private final String type;
@@ -14,32 +16,34 @@ public class Room {
     private double price; //per night per guest
     private final int numAdults;
     private final int numChildren;
-    private Map<Date, Boolean> available;
+    private Map<LocalDate, Boolean> available;
 
-    public Room(String type, List<String> amenities, int numAdults, int numChildren) {
-        this.roomId = Room.Id++;
+    public Room(long hotelId, String type, List<String> amenities, int numAdults, int numChildren) {
+        this.hotelId = hotelId;
+        this.roomId = Id++;
         this.type = type;
         this.amenities = amenities;
         this.numAdults = numAdults;
         this.numChildren = numChildren;
         this.price = setPriceCreation();
         this.available = new HashMap<>();
+        initializeAvailability();
     }
 
     private double setPriceCreation() {
-        if (type.equals("Single")) {
+        if (type.equalsIgnoreCase("single")) {
             price = 50.0;
-        } else if (type.equals("Double")) {
+        } else if (type.equalsIgnoreCase("double")) {
             price = 90.0;
-        } else if (type.equals("King")) {
+        } else if (type.equalsIgnoreCase("king")) {
             price = 100.0;
-        } else if (type.equals("Twin")) {
+        } else if (type.equalsIgnoreCase("twin")) {
             price = 90.0;
-        } else if (type.equals("Suite")) {
+        } else if (type.equalsIgnoreCase("suite")) {
             price = 150.0;
-        } else if (type.equals("Studio")) {
+        } else if (type.equalsIgnoreCase("studio")) {
             price = 80.0;
-        } else if (type.equals("Accessible")) {
+        } else if (type.equalsIgnoreCase("accessible")) {
             price = 90.0;
         }
         return price;
@@ -47,6 +51,10 @@ public class Room {
 
     public long getRoomId() {
         return roomId;
+    }
+
+    public long getHotelId() {
+        return hotelId;
     }
 
     public String getType() {
@@ -73,79 +81,92 @@ public class Room {
         return (numAdults <= getNumAdults() && numChildren <= getNumChildren());
     }
 
-    public boolean isAvailable(Date checkIn, Date checkOut) {
-        try {
-            if (checkOut.before(checkIn)) {
-                throw new IllegalArgumentException("Check-out date cannot be before check-in date.");
-            }
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(checkIn);
-            // Handle same-day check-in/check-out
-            if (checkIn.equals(checkOut)) {
-                return available.containsKey(checkIn) && available.get(checkIn);
-            }
-            // Iterate through dates from checkIn (inclusive) to checkOut (exclusive)
-            while (cal.getTime().before(checkOut)) {
-                Date dateToCheck = cal.getTime();
-                if (!available.containsKey(dateToCheck) || !available.get(dateToCheck)) {
-                    return false;
-                }
-                cal.add(Calendar.DAY_OF_MONTH, 1);
-            }
-            return true;
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-            return false;
+    private void initializeAvailability() {
+        LocalDate today = LocalDate.now();
+        for (LocalDate date = today; date.isBefore(today.plusYears(1)); date = date.plusDays(1)) {
+            available.put(date, true);
         }
     }
 
-    public boolean bookDate(Date checkIn, Date checkOut, String userId) throws Exception {
-        // Check availability first using isAvailable
-        try {
-            if (!isAvailable(checkIn, checkOut)) {
-                throw new Exception("Room is not available for the requested dates.");
-            }
+    // Method to check availability
+    public boolean isAvailableConvert(LocalDate checkIn, LocalDate checkOut) {
+        if (checkOut.isBefore(checkIn)) {
+            throw new IllegalArgumentException("Check-out date cannot be before check-in date.");
+        }
 
-            // Mark booked dates as unavailable
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(checkIn);
-            while (cal.getTime().before(checkOut)) {
-                Date dateToMark = cal.getTime();
-                available.putIfAbsent(dateToMark, false);
-                cal.add(Calendar.DAY_OF_MONTH, 1);
-            }
+        // Handle same-day check-in/check-out
+        if (checkIn.equals(checkOut)) {
+            return available.containsKey(checkIn) && available.get(checkIn);
+        }
 
-            return true;
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+        // Iterate through dates from checkIn (inclusive) to checkOut (exclusive)
+        for (LocalDate date = checkIn; date.isBefore(checkOut); date = date.plusDays(1)) {
+            if (!available.containsKey(date) || !available.get(date)) {
+                System.out.println("Date not available: " + date); // Debugging log
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Method to book a room
+    public boolean bookDateConvert(LocalDate checkIn, LocalDate checkOut, String userId) {
+        if (!isAvailableConvert(checkIn, checkOut)) {
+            System.out.println("Room is not available for the requested dates.");
             return false;
         }
+
+        // Iterate through dates from checkIn (inclusive) to checkOut (exclusive)
+        for (LocalDate date = checkIn; date.isBefore(checkOut); date = date.plusDays(1)) {
+            if (available.containsKey(date)) {
+                available.put(date, false);
+            }
+        }
+        return true;
+    }
+
+    // Method to cancel a reservation
+    public boolean bookDate(Date checkIn, Date checkOut, String userId) {
+        LocalDate normalizedCheckIn = convertToLocalDateViaInstant(checkIn);
+        LocalDate normalizedCheckOut = convertToLocalDateViaInstant(checkOut);
+        return bookDateConvert(normalizedCheckIn, normalizedCheckOut, userId);
+    }
+
+    private LocalDate convertToLocalDateViaInstant(Date dateToConvert) {
+        return dateToConvert.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+    }
+
+    public boolean isAvailable(Date checkIn, Date checkOut) {
+        LocalDate normalizedCheckIn = convertToLocalDateViaInstant(checkIn);
+        LocalDate normalizedCheckOut = convertToLocalDateViaInstant(checkOut);
+        return isAvailableConvert(normalizedCheckIn, normalizedCheckOut);
     }
 
     public boolean cancelation(Date checkIn, Date checkOut) {
-        try {
-            if (checkOut.before(checkIn)) {
-                throw new IllegalArgumentException("Check-out date cannot be before check-in date.");
-            }
-            //i need to check if it true what i did
-            Calendar cal = Calendar.getInstance();
-            cal.setTime(checkIn);
-            while (cal.getTime().before(checkOut)) {
-                Date dateToMark = cal.getTime();
-                available.putIfAbsent(dateToMark, true);
-                cal.add(Calendar.DAY_OF_MONTH, 1);
-            }
+        LocalDate normalizedCheckIn = convertToLocalDateViaInstant(checkIn);
+        LocalDate normalizedCheckOut = convertToLocalDateViaInstant(checkOut);
+        return cancelationConvert(normalizedCheckIn, normalizedCheckOut);
+    }
 
-            return true;
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-            return false;
+    public boolean cancelationConvert(LocalDate checkIn, LocalDate checkOut) {
+        if (checkOut.isBefore(checkIn)) {
+            throw new IllegalArgumentException("Check-out date cannot be before check-in date.");
         }
+
+        // Iterate through dates from checkIn (inclusive) to checkOut (exclusive)
+        for (LocalDate date = checkIn; date.isBefore(checkOut); date = date.plusDays(1)) {
+            if (available.containsKey(date)) {
+                available.put(date, true);
+            }
+        }
+        return true;
     }
 
     @Override
     public String toString() {
-        return "Room: type='" + type + ", Id=" + roomId + "', amenities=" + amenities + ", price=" + price + ", numAdults=" + numAdults
-                + ", numChildren=" + numChildren;
+        return "Room: type = " + type + ", Room Id =" + roomId + ", Hotel Id = " + hotelId + ", price = " + price + ", numAdults = " + numAdults
+                + ", numChildren = " + numChildren + ", amenities =" + amenities;
     }
 }
