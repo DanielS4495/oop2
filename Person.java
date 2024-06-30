@@ -110,17 +110,6 @@ public abstract class Person {
         }
     }
 
-    // public void removeNotification(Notification notificationType) {
-    //     if (notificationType != null) {
-    //         for (Notification notification : notifications) {
-    //             if (notification != null) {
-    //                 if (notification.toString().equals(notificationType.toString())) {
-    //                     notifications.remove(notificationType);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
     public void removeNotification(Notification notificationType) {
         if (notificationType != null) {
             Iterator<Notification> iterator = notifications.iterator();

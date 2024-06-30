@@ -192,7 +192,7 @@ public class Controller {
     }
 
     private Date getDateInput(String message) {
-        view.displayMessage(message+" format (dd-MM-yy)");
+        view.displayMessage(message + " format (dd-MM-yy)");
         Date date = null;
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yy");
         while (date == null) {
@@ -443,12 +443,16 @@ public class Controller {
                 }
             }
         }
-        booking.payReservation(userId, reservationId, paymentMethod, amountreservation, cardNumber, cvv, expirationDate, cardHolderName);
-        view.displayMessage("Payment successful.");
-        view.displayMessage("Enter review if you want to add one or press enter to skip");
-        String review = this.scanner.nextLine();
-        if (review.equalsIgnoreCase("review")) {
-            addReview(userId, reservationId);
+        boolean b = booking.payReservation(userId, reservationId, paymentMethod, amountreservation, cardNumber, cvv, expirationDate, cardHolderName);
+        if (b) {
+            view.displayMessage("Payment successful.");
+            view.displayMessage("Enter review if you want to add one or press enter to skip");
+            String review = this.scanner.nextLine();
+            if (review.equalsIgnoreCase("review")) {
+                addReview(userId, reservationId);
+            }
+        } else {
+            view.displayMessage("Payment not successful.");
         }
     }
 
@@ -462,7 +466,12 @@ public class Controller {
 
     private void SearchRoomsInHotel() {
         long roomId = getLongInput("Enter id number of room");
-        view.displayMessage(booking.findRoomById(roomId).toString());
+        Room room = booking.findRoomById(roomId);
+        if (room == null) {
+            view.displayMessage("Room not found.");
+        } else {
+            view.displayMessage(booking.findRoomById(roomId).toString());
+        }
     }
 
     private void AddNotificationType(long personId) {
@@ -498,7 +507,7 @@ public class Controller {
             view.displayMessage("None");
         } else {
             for (int i = 0; i < s.size(); i++) {
-                view.displayMessage(s.get(i).toString());
+                view.displayMessage(s.get(i));
             }
         }
     }
@@ -519,7 +528,7 @@ public class Controller {
 
     private void RemoveFromWishlist(long userId) {
         long reservationId = getLongInput("Enter reservation id");
-        if(booking.removeFromWishlist(userId, reservationId)){
+        if (booking.removeFromWishlist(userId, reservationId)) {
             view.displayMessage("Reservation removed from wishlist.");
         } else {
             view.displayMessage("Reservation not found in wishlist.");

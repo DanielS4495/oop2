@@ -11,7 +11,7 @@ public class Hotel {
     private final String location;
     private final String description;
     private List<String> amenities;
-    private List<Room> rooms;//allthe rooms
+    private List<Room> rooms;//all the rooms
     private List<Room> filterRooms;//for filter
     private List<User> subscribers;
     private List<Review> reviews;
@@ -121,16 +121,13 @@ public class Hotel {
     public void addRoom(Room room, Manager manager) {
         if (this.manager == manager) {
             rooms.add(room);
-            // this.filterRooms.add(room);
         }
     }
 
     public void addRooms(List<Room> addRooms, Manager manager) {
         if (this.manager == manager) {
             for (Room room : addRooms) {
-                // addRoom(room, manager);
                 this.rooms.add(room);
-                // this.filterRooms.add(room);
             }
         }
     }
@@ -138,7 +135,6 @@ public class Hotel {
     public void removeRoom(Room room, Manager manager) {
         if (this.manager == manager) {
             rooms.remove(room);
-            // this.filterRooms.remove(room);
         }
     }
 
